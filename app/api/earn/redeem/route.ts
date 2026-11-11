@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { award, counts, earnState, existingTicket, issueTicket } from "@/lib/core";
-import { getEvent } from "@/lib/events";
+import { findEvent } from "@/lib/merchants";
 import { fail, readJson } from "@/lib/http";
 import { store } from "@/lib/store";
 import { cleanName, isId } from "@/lib/token";
 
 export async function POST(req: Request) {
   const body = await readJson<{ slug: string; gid: string; name: string; rewardId: string }>(req);
-  const ev = body && getEvent(body.slug);
+  const ev = body && (await findEvent(body.slug));
   const reward = ev?.earn?.rewards.find((r) => r.id === body?.rewardId);
   if (!body || !ev || !reward) return fail("That reward does not exist.", 404);
+  if (ev.past) return fail("This event has ended.", 410);
   if (!isId(body.gid)) return fail("Missing guest id.");
 
   const state = await earnState(ev, body.gid);

@@ -1,10 +1,11 @@
+import { findEvent } from "@/lib/merchants";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Ticket } from "@/components/Ticket";
 import { TicketActions } from "@/components/TicketActions";
 import { checkInStatus, existingTicket } from "@/lib/core";
-import { designVars, getEvent, serial, tierLabel } from "@/lib/events";
+import { designVars, serial, tierLabel } from "@/lib/events";
 import { qrSvg } from "@/lib/qr";
 import { verifyTicket } from "@/lib/token";
 import { appleWalletReady } from "@/lib/wallet/apple";
@@ -16,7 +17,7 @@ export const metadata: Metadata = { title: "Your ticket", robots: { index: false
 export default async function TicketPage({ params }: { params: Promise<{ token: string }> }) {
   const token = decodeURIComponent((await params).token);
   const claims = verifyTicket(token);
-  const ev = claims && getEvent(claims.e);
+  const ev = claims && (await findEvent(claims.e));
 
   if (!claims || !ev) {
     return (

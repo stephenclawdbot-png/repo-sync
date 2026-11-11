@@ -1,12 +1,13 @@
+import { findEvent } from "@/lib/merchants";
 import { NextResponse } from "next/server";
 import { checkIn } from "@/lib/core";
-import { getEvent, tierLabel } from "@/lib/events";
+import { tierLabel } from "@/lib/events";
 import { fail, readJson } from "@/lib/http";
 import { verifyTicket } from "@/lib/token";
 
 export async function POST(req: Request) {
   const body = await readJson<{ slug: string; code: string; door: string }>(req);
-  const ev = body && getEvent(body.slug);
+  const ev = body && (await findEvent(body.slug));
   if (!body || !ev) return fail("Unknown event.", 404);
   if (String(body.door) !== ev.doorCode) return fail("Wrong door code.", 401);
 

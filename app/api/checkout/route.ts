@@ -1,6 +1,7 @@
+import { findEvent } from "@/lib/merchants";
 import { NextResponse } from "next/server";
 import { counts, existingTicket, issueTicket, recordReferral } from "@/lib/core";
-import { getEvent, platformFee } from "@/lib/events";
+import { platformFee } from "@/lib/events";
 import { clampInt, fail, readJson } from "@/lib/http";
 import { routePayment } from "@/lib/payments/router";
 import type { PaymentMethod } from "@/lib/payments/types";
@@ -23,9 +24,10 @@ interface Body {
  */
 export async function POST(req: Request) {
   const body = await readJson<Body>(req);
-  const ev = body && getEvent(body.slug);
+  const ev = body && (await findEvent(body.slug));
   const tier = ev?.tiers.find((t) => t.id === body?.tierId);
   if (!body || !ev || !tier) return fail("That ticket type is not on sale.", 404);
+  if (ev.past) return fail("This event has ended.", 410);
   if (!isId(body.gid)) return fail("Missing guest id.");
   const name = cleanName(body.name);
   if (!name) return fail("Please enter the name for the ticket.");

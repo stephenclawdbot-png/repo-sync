@@ -1,19 +1,62 @@
 # Stagepass
 
-RSVP platform for any gathering: guests **RSVP, buy, or earn** their way in; every entry is a QR ticket
-that becomes a collectible **stub**; organizers customize the page, form, ticket and stub.
+An RSVP platform for any gathering. Guests **RSVP, buy, or earn** their way in; every entry is a signed QR
+ticket that becomes a collectible **stub** at the door; merchants design their own storefront, tickets and stubs.
 
-- `docs/PRODUCT.md`: product study and feature map (start here)
-- `docs/ARCHITECTURE.md`: competitive study, system design, data model, scaling, compliance, roadmap
-- `docs/BUSINESS.md`: positioning, revenue model, website structure, go-to-market, KPIs
-- `lib/payments/`: gateway adapter interface + router (cheapest healthy gateway, BYO account priority, failover)
-- `lib/payouts.ts`: risk-tiered rolling payout + reserve policy
-- `app/`: marketing site (`/`), live storefront builder + checkout demo (`/e/manila-sound-fest`),
-  payout simulator (`/dashboard`), `POST /api/checkout`, `/api/webhooks/[provider]`
+Live prototype: https://stagepass-sigma.vercel.app
 
-The current prototype covers the paid-ticket path only (RSVP, earn, QR tickets, Wallet passes and stubs
-are designed in the docs but not built yet). Payments run in **sandbox mode**: adapters model coverage and fees but make no real API calls.
+## Try it
+
+| Where | What |
+|---|---|
+| `/` | Landing page and ten sample events |
+| `/signup` | Sign up as a guest or a merchant, or load a ready-made demo account for either |
+| `/me` | Guest account: profile, upcoming tickets, stub collection, points |
+| `/dashboard` | Merchant back office: create events, watch the guest list, design the storefront |
+| `/s/bayfront` | A sample merchant storefront (yours is at `/s/<your-address>`) |
+| `/e/<event>` | Event page with the RSVP / Buy / Earn panel |
+| `/t/<token>` | A ticket: QR, wallet buttons, calendar; turns into a stub when scanned |
+| `/scan` | Door scanner (camera or pasted code). Sample events use door code `2468` |
+| `/host/<event>` | Live guest stats for one event |
+| `/studio` | Design playground |
+
+A full loop: RSVP to an event → open the ticket → open `/scan` on another device or tab, enter the door code,
+scan or paste the ticket link → the ticket page flips to a stub by itself.
+
+## What is real and what is demo
+
+- **Real:** RSVP with capacity, plus-ones, questions and waitlist; signed tickets; door check-in with
+  duplicate detection; stubs; points, referrals and reward redemption with budgets; merchant sign-up, event
+  creation and storefront editing; Apple/Google Wallet pass generation (see below).
+- **Sandbox:** payments. Checkout picks a gateway and issues the ticket, but nothing is charged.
+- **Demo-grade:** accounts. There is no password or email/phone verification; a guest or merchant session
+  lives in the browser. Storage is a small record store on Vercel Blob, not the Postgres design in the docs.
+
+## Wallet passes
+
+Buttons appear on every ticket and switch on when credentials are set as environment variables:
+
+- Apple: `APPLE_PASS_TYPE_ID`, `APPLE_TEAM_ID`, `APPLE_PASS_CERT`, `APPLE_PASS_KEY`, `APPLE_WWDR_CERT`
+  (optional `APPLE_PASS_KEY_PASSPHRASE`). Needs an Apple Developer account.
+- Google: `GOOGLE_WALLET_ISSUER_ID`, `GOOGLE_WALLET_SA_EMAIL`, `GOOGLE_WALLET_SA_KEY`. Needs a Google Wallet
+  issuer account.
+
+Other settings: `TICKET_SECRET` (signs tickets and merchant sessions), `BLOB_READ_WRITE_TOKEN` (storage; without
+it the app keeps data in memory).
+
+## Docs
+
+- `docs/PRODUCT.md`: product study and feature map
+- `docs/DESIGN.md`: design study and design system
+- `docs/ARCHITECTURE.md`: production system design
+- `docs/BUSINESS.md`: business model and go-to-market
+
+## Run locally
 
 ```bash
-npm install && npm run dev
+npm install
+```
+
+```bash
+npm run dev
 ```

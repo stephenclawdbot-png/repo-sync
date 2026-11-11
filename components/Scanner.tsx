@@ -28,9 +28,9 @@ function describe(r: Result): { tone: "ok" | "warn" | "bad"; title: string; deta
   }
 }
 
-export function Scanner({ events, initial }: { events: { slug: string; title: string }[]; initial?: string }) {
+export function Scanner({ events, initial, initialDoor = "" }: { events: { slug: string; title: string }[]; initial?: string; initialDoor?: string }) {
   const [slug, setSlug] = useState(events.some((e) => e.slug === initial) ? initial! : events[0].slug);
-  const [door, setDoor] = useState("");
+  const [door, setDoor] = useState(initialDoor);
   const [manual, setManual] = useState("");
   const [camera, setCamera] = useState<"off" | "starting" | "on" | "blocked">("off");
   const [last, setLast] = useState<Result | null>(null);

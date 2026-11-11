@@ -175,7 +175,17 @@ allowance, merch, or priority for the next event.
 
 ---
 
-## 7. Recommended build order
+## 7. Prototype status
+
+Built and live: RSVP core, signed QR tickets, door scanner, stubs and collection, Earn (quests, referrals,
+points, rewards with budgets), sandbox Buy, Wallet pass builders (waiting on Apple/Google credentials),
+guest accounts, merchant back office with event creation, customizable storefronts, ten sample events,
+one-click demo accounts for both sides.
+
+Not built yet: real accounts (phone/email verification), live payment gateways and payouts, approval mode,
+recurring events, transfers and resale, messaging (SMS/chat blasts), photo albums, Postgres storage.
+
+## 8. Recommended build order
 
 1. **RSVP core**: event page, Going/Maybe/Can't go, questions, capacity + waitlist, one-time-code sign-in.
 2. **Ticket + entry**: signed QR, Apple/Google Wallet pass, scanner.

@@ -1,4 +1,4 @@
-import { getEvent } from "@/lib/events";
+import { findEvent } from "@/lib/merchants";
 import { fail } from "@/lib/http";
 
 const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
@@ -6,7 +6,7 @@ const esc = (s: string) => s.replace(/([,;\\])/g, "\\$1");
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const ev = getEvent(url.searchParams.get("slug") ?? "");
+  const ev = (await findEvent(url.searchParams.get("slug") ?? ""));
   if (!ev) return fail("Unknown event.", 404);
   const ics = [
     "BEGIN:VCALENDAR",

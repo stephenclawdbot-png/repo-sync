@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { counts } from "@/lib/core";
-import { getEvent } from "@/lib/events";
+import { findEvent } from "@/lib/merchants";
 import { fail } from "@/lib/http";
 import { fields, persistent, store } from "@/lib/store";
 
 export async function GET(req: Request, ctx: { params: Promise<{ slug: string }> }) {
-  const ev = getEvent((await ctx.params).slug);
+  const ev = (await findEvent((await ctx.params).slug));
   if (!ev) return fail("Unknown event.", 404);
   if (new URL(req.url).searchParams.get("door") !== ev.doorCode) return fail("Wrong door code.", 401);
 

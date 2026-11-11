@@ -14,9 +14,14 @@ export function SiteHeader() {
         <Link href="/studio">Design studio</Link>
         <Link href="/organizers">For organizers</Link>
       </nav>
-      <Link href="/me" className="btn btn--ink btn--sm">
-        My tickets
-      </Link>
+      <div className="row" style={{ gap: 8 }}>
+        <Link href="/signup" className="btn btn--sm">
+          Sign up
+        </Link>
+        <Link href="/me" className="btn btn--ink btn--sm">
+          My tickets
+        </Link>
+      </div>
     </header>
   );
 }
@@ -35,6 +40,9 @@ export function SiteFooter() {
           </p>
         </div>
         <nav className="site-nav" aria-label="Footer">
+          <Link href="/signup">Sign up</Link>
+          <Link href="/dashboard">Merchant back office</Link>
+          <Link href="/s/bayfront">Sample storefront</Link>
           <Link href="/me">My tickets</Link>
           <Link href="/scan">Door scanner</Link>
           <Link href="/studio">Design studio</Link>

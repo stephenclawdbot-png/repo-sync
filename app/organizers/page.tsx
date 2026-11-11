@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PayoutSimulator } from "@/components/PayoutSimulator";
 import { SiteFooter, SiteHeader } from "@/components/SiteHeader";
-import { EVENTS } from "@/lib/events";
 
 export const metadata: Metadata = { title: "For organizers" };
 
@@ -25,8 +24,9 @@ export default function Organizers() {
           <h1 style={{ fontSize: "clamp(2.4rem,6.5vw,4.6rem)", maxWidth: "16ch" }}>Fill the room. Know who came. Get paid sooner.</h1>
           <p className="lede">Free RSVPs cost nothing. Paid tickets take local payment methods and pay out as you sell. Rewards turn your regulars into your marketing.</p>
           <div className="row">
-            <Link className="btn btn--ink" href="/studio">Try the design studio</Link>
-            <Link className="btn" href={`/host/${EVENTS[0].slug}`}>See a host dashboard</Link>
+            <Link className="btn btn--ink" href="/signup">Sign up as a merchant</Link>
+            <Link className="btn" href="/signup">Open the merchant demo</Link>
+            <Link className="btn" href="/s/bayfront">See a storefront</Link>
             <Link className="btn" href="/scan">Open the door scanner</Link>
           </div>
         </div>

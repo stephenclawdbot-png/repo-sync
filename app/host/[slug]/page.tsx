@@ -3,12 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HostDashboard } from "@/components/HostDashboard";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getEvent } from "@/lib/events";
+import { findEvent } from "@/lib/merchants";
 
 export const metadata: Metadata = { title: "Host dashboard" };
 
-export default async function HostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const ev = getEvent((await params).slug);
+export default async function HostPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ door?: string }> }) {
+  const ev = (await findEvent((await params).slug));
   if (!ev) notFound();
   return (
     <>
@@ -22,7 +22,7 @@ export default async function HostPage({ params }: { params: Promise<{ slug: str
             <Link className="btn btn--sm btn--ink" href={`/scan?event=${ev.slug}`}>Open door scanner</Link>
           </div>
         </div>
-        <HostDashboard slug={ev.slug} currency={ev.currency} paid={ev.tiers.length > 0} />
+        <HostDashboard slug={ev.slug} currency={ev.currency} paid={ev.tiers.length > 0} initialDoor={(await searchParams).door} />
       </main>
     </>
   );

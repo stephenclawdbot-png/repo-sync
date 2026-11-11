@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import { Scanner } from "@/components/Scanner";
 import { SiteHeader } from "@/components/SiteHeader";
-import { EVENTS } from "@/lib/events";
+import { UPCOMING } from "@/lib/events";
+import { findEvent } from "@/lib/merchants";
 
 export const metadata: Metadata = { title: "Door scanner" };
 
-export default async function ScanPage({ searchParams }: { searchParams: Promise<{ event?: string }> }) {
-  const initial = (await searchParams).event;
+export default async function ScanPage({ searchParams }: { searchParams: Promise<{ event?: string; door?: string }> }) {
+  const { event: initial, door } = await searchParams;
+  const events = UPCOMING.map((e) => ({ slug: e.slug, title: e.title }));
+  // An event created by a merchant is not in the sample list: add it when the link names it.
+  if (initial && !events.some((e) => e.slug === initial)) {
+    const own = await findEvent(initial);
+    if (own && !own.past) events.unshift({ slug: own.slug, title: own.title });
+  }
   return (
     <>
       <SiteHeader />
@@ -14,9 +21,9 @@ export default async function ScanPage({ searchParams }: { searchParams: Promise
         <div className="stack" style={{ "--gap": "8px" } as React.CSSProperties}>
           <p className="mono">For door staff</p>
           <h1 style={{ fontSize: "clamp(2.2rem,6vw,3.6rem)" }}>Door scanner</h1>
-          <p className="muted">Runs in the browser on any phone. Demo door code for every event: <strong>2468</strong>.</p>
+          <p className="muted">Runs in the browser on any phone. Sample events use door code <strong>2468</strong>; your own events show theirs in the back office.</p>
         </div>
-        <Scanner events={EVENTS.map((e) => ({ slug: e.slug, title: e.title }))} initial={initial} />
+        <Scanner events={events} initial={initial} initialDoor={door} />
       </main>
     </>
   );

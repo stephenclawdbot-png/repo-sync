@@ -1,10 +1,13 @@
+import { findEvent } from "@/lib/merchants";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EntryPanel, type PublicEvent } from "@/components/EntryPanel";
+import Link from "next/link";
+import { Poster } from "@/components/Poster";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Ticket } from "@/components/Ticket";
 import { counts } from "@/lib/core";
-import { designVars, getEvent, paths, priceLine } from "@/lib/events";
+import { designVars, paths, priceLine } from "@/lib/events";
 import { isId } from "@/lib/token";
 
 export const dynamic = "force-dynamic";
@@ -12,12 +15,12 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ ref?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const ev = getEvent((await params).slug);
+  const ev = (await findEvent((await params).slug));
   return ev ? { title: ev.title, description: ev.tagline } : {};
 }
 
 export default async function EventPage({ params, searchParams }: Props) {
-  const ev = getEvent((await params).slug);
+  const ev = (await findEvent((await params).slug));
   if (!ev) notFound();
   const ref = (await searchParams).ref;
   const c = await counts(ev);
@@ -30,10 +33,12 @@ export default async function EventPage({ params, searchParams }: Props) {
       <SiteHeader />
       <main id="main" className="wrap ev-layout">
         <div className="stack" style={{ "--gap": "26px" } as React.CSSProperties}>
+          <Poster design={ev.design} kind={`${ev.kind} · ${ev.city}`} big={ev.dateLabel.split(" ").slice(1, 3).join(" ")} />
           <div className="ev-hero">
             <div className="chips">
               <span className="chip">{ev.kind}</span>
               <span className="chip">Hosted by {ev.org.name}</span>
+              {ev.past && <span className="chip chip--sky">Ended</span>}
             </div>
             <h1>{ev.title}</h1>
             <p className="lede">{ev.tagline}</p>
@@ -58,10 +63,40 @@ export default async function EventPage({ params, searchParams }: Props) {
             </div>
           </div>
 
-          <div className="stack">
-            <h2 style={{ fontSize: "1.6rem" }}>About</h2>
-            {ev.about.map((p) => <p key={p}>{p}</p>)}
-          </div>
+          {ev.about.length > 0 && (
+            <div className="stack">
+              <h2 style={{ fontSize: "1.6rem" }}>About</h2>
+              {ev.about.map((p) => <p key={p}>{p}</p>)}
+            </div>
+          )}
+
+          {ev.lineup && (
+            <div className="stack">
+              <h2 style={{ fontSize: "1.6rem" }}>{ev.kind === "Conference" ? "Speakers" : ev.kind === "Night market" ? "Stalls" : "Lineup"}</h2>
+              <div className="chips">{ev.lineup.map((a) => <span className="chip" key={a}>{a}</span>)}</div>
+            </div>
+          )}
+
+          {ev.schedule && (
+            <div className="stack">
+              <h2 style={{ fontSize: "1.6rem" }}>Schedule</h2>
+              <ul className="detail-list">
+                {ev.schedule.map((s) => <li key={s.time}><span className="mono">{s.time}</span><span>{s.what}</span></li>)}
+              </ul>
+            </div>
+          )}
+
+          {ev.faq && (
+            <div>
+              <h2 style={{ fontSize: "1.6rem", marginBottom: 16 }}>Questions</h2>
+              {ev.faq.map((f) => (
+                <details className="faq" key={f.q}>
+                  <summary>{f.q}</summary>
+                  <p>{f.a}</p>
+                </details>
+              ))}
+            </div>
+          )}
 
           <div className="stack">
             <h2 style={{ fontSize: "1.6rem" }}>Your ticket will look like this</h2>
@@ -75,7 +110,16 @@ export default async function EventPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        <EntryPanel ev={publicEvent} refGid={isId(ref) ? ref : undefined} />
+        {ev.past ? (
+          <section className="panel" aria-label="Event ended">
+            <div className="panel__body stack">
+              <div className="note"><strong>This event has ended.</strong>{c.checkedIn.toLocaleString("en")} people were scanned in. If you were one of them, your ticket is now a stub.</div>
+              <Link className="btn btn--ink btn--block" href="/me">See my stubs</Link>
+            </div>
+          </section>
+        ) : (
+          <EntryPanel ev={publicEvent} refGid={isId(ref) ? ref : undefined} />
+        )}
       </main>
     </div>
   );

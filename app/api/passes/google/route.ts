@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getEvent } from "@/lib/events";
+import { findEvent } from "@/lib/merchants";
 import { fail } from "@/lib/http";
 import { verifyTicket } from "@/lib/token";
 import { googleSaveUrl, googleWalletReady } from "@/lib/wallet/google";
@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token") ?? "";
   const claims = verifyTicket(token);
-  const ev = claims && getEvent(claims.e);
+  const ev = claims && (await findEvent(claims.e));
   if (!claims || !ev) return fail("This ticket is not valid.", 404);
   if (!googleWalletReady()) return fail("Google Wallet is not set up yet: the issuer account is missing.", 501);
   try {

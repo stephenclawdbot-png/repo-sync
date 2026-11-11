@@ -2,10 +2,46 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+export interface Profile {
+  handle: string;
+  city: string;
+  since: string;
+  demo: boolean;
+}
+
 export interface Guest {
   gid: string;
   name: string;
   tickets: string[];
+  /** Present once the guest has signed up (or loaded the demo guest). */
+  profile?: Profile;
+}
+
+export interface MerchantSession {
+  mid: string;
+  key: string;
+  handle: string;
+  name: string;
+}
+
+const MERCHANT_KEY = "stagepass.merchant.v1";
+
+export function loadMerchantSession(): MerchantSession | null {
+  try {
+    const raw = localStorage.getItem(MERCHANT_KEY);
+    return raw ? (JSON.parse(raw) as MerchantSession) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveMerchantSession(s: MerchantSession | null) {
+  try {
+    if (s) localStorage.setItem(MERCHANT_KEY, JSON.stringify(s));
+    else localStorage.removeItem(MERCHANT_KEY);
+  } catch {
+    /* storage blocked: the session lasts for this page only */
+  }
 }
 
 const KEY = "stagepass.guest.v1";
@@ -75,7 +111,10 @@ export function useGuest() {
       }),
     [update],
   );
+  const setProfile = useCallback((name: string, profile: Profile) => update((g) => ({ ...g, name, profile })), [update]);
+  /** Swap in a whole guest (used by the demo guest). */
+  const replaceGuest = useCallback((g: Guest) => save(g), []);
   const ticketFor = useCallback((slug: string) => guest?.tickets.find((t) => peek(t)?.e === slug), [guest]);
 
-  return { guest, setName, addTicket, ticketFor };
+  return { guest, setName, addTicket, ticketFor, setProfile, replaceGuest };
 }

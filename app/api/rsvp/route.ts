@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { award, cancelTicket, counts, existingTicket, issueTicket, questPoints, recordReferral } from "@/lib/core";
-import { getEvent } from "@/lib/events";
+import { findEvent } from "@/lib/merchants";
 import { clampInt, fail, readJson } from "@/lib/http";
 import { fields, store } from "@/lib/store";
 import { cleanName, isId } from "@/lib/token";
@@ -17,8 +17,9 @@ interface Body {
 
 export async function POST(req: Request) {
   const body = await readJson<Body>(req);
-  const ev = body && getEvent(body.slug);
+  const ev = body && (await findEvent(body.slug));
   if (!body || !ev || !ev.rsvp) return fail("This event does not take RSVPs.", 404);
+  if (ev.past) return fail("This event has ended.", 410);
   if (!isId(body.gid)) return fail("Missing guest id.");
   if (!["going", "maybe", "declined"].includes(body.status)) return fail("Choose Going, Maybe or Can't go.");
   const name = cleanName(body.name);

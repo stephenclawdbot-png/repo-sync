@@ -20,9 +20,9 @@ const VIA = [
   { key: "earn", label: "Earned", color: "var(--salmon)" },
 ] as const;
 
-export function HostDashboard({ slug, currency, paid }: { slug: string; currency: string; paid: boolean }) {
-  const [door, setDoor] = useState("");
-  const [entered, setEntered] = useState("");
+export function HostDashboard({ slug, currency, paid, initialDoor = "" }: { slug: string; currency: string; paid: boolean; initialDoor?: string }) {
+  const [door, setDoor] = useState(initialDoor);
+  const [entered, setEntered] = useState(initialDoor);
   const [stats, setStats] = useState<Stats | null>(null);
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
@@ -56,7 +56,7 @@ export function HostDashboard({ slug, currency, paid }: { slug: string; currency
         <div className="field">
           <label htmlFor="h-door">Door code</label>
           <input id="h-door" type="text" inputMode="numeric" autoComplete="off" value={door} onChange={(e) => setDoor(e.target.value)} aria-describedby="h-hint" />
-          <p className="hint" id="h-hint">Demo code: 2468. Real events use staff sign-in instead of a shared code.</p>
+          <p className="hint" id="h-hint">Sample events use 2468. Your own events show their code in the back office.</p>
         </div>
         <button className="btn btn--ink">Open dashboard</button>
         <p role="alert" style={{ color: "var(--bad)", fontWeight: 650 }}>{err}</p>
