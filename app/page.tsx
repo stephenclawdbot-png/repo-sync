@@ -1,148 +1,166 @@
 import Link from "next/link";
-import { Nav } from "@/components/Nav";
+import { SiteFooter, SiteHeader } from "@/components/SiteHeader";
+import { Ticket } from "@/components/Ticket";
+import { designVars, EVENTS, priceLine } from "@/lib/events";
 
-const GATEWAYS = [
-  { region: "Philippines", methods: ["GCash", "Maya", "QR Ph", "GrabPay", "Cards", "PayPal"], via: "PayMongo · Xendit" },
-  { region: "Indonesia", methods: ["QRIS", "Cards", "PayPal"], via: "Xendit" },
-  { region: "Malaysia", methods: ["DuitNow", "GrabPay", "Cards"], via: "Xendit · Stripe" },
-  { region: "Thailand", methods: ["PromptPay", "Cards"], via: "Xendit · Stripe" },
-  { region: "Singapore", methods: ["PayNow", "Apple Pay", "Cards"], via: "Stripe" },
-  { region: "Global", methods: ["Cards", "Apple Pay", "Google Pay", "PayPal"], via: "Stripe · PayPal" },
-];
+const KINDS = ["House parties", "Run clubs", "Concerts", "Meetups", "Workshops", "Weddings", "Fun runs", "Conferences", "Reunions"];
 
-const DIAGRAM = `Buyers / Organizers / Embeds
-        │
-  Edge (Vercel): storefront ISR · custom domains · WAF · waiting room
-        │
-  API / BFF: auth · rate limits · idempotency keys
-        │
-  ┌─────────┬────────────┬──────────┬─────────────┬─────────┬──────────┐
-  Catalog   Inventory    Checkout   Payment       Ledger    Payouts
-  & themes  & seat holds saga       orchestrator  (double-  & risk
-                                    (adapters)    entry)    reserve
-        │
-  Outbox → Event bus → tickets · notifications · webhooks · analytics
-        │
-  Postgres · Redis · object storage · warehouse
-  Stripe · PayMongo · Xendit · PayPal · bank rails (InstaPay, FAST, DuitNow)`;
+function sample(i: number) {
+  const e = EVENTS[i];
+  return { design: e.design, kind: e.kind, title: e.title, dateLabel: e.dateLabel, venue: e.venue };
+}
 
 export default function Home() {
   return (
     <>
-      <Nav />
-      <main>
+      <SiteHeader />
+      <main id="main">
         <div className="wrap hero">
-          <span className="eyebrow">Event ticketing for Southeast Asia and beyond</span>
-          <h1>Your brand. Every payment method. Your money tomorrow.</h1>
-          <p className="lede">
-            Stagepass gives organizers a fully branded storefront, a checkout that accepts the wallets buyers actually use,
-            and payouts that arrive the day after each sale, not weeks after your event.
-          </p>
-          <div className="cta-row">
-            <Link className="btn primary" href="/e/manila-sound-fest">
-              Try the demo storefront →
-            </Link>
-            <Link className="btn" href="/dashboard">
-              Simulate your payouts
-            </Link>
+          <div className="stack" style={{ "--gap": "22px" } as React.CSSProperties}>
+            <p className="mono">Admit everyone</p>
+            <h1>
+              <span className="hl-mint">RSVP</span> it. <span className="hl-marigold">Buy</span> it.{" "}
+              <span className="hl-salmon">Earn</span> it. Keep the <span className="hl-sky">stub</span>.
+            </h1>
+            <p className="lede">
+              One guest list for any gathering. People get in free, with a paid ticket, or by earning one. Everyone gets a QR
+              for the door, and a stub to keep after.
+            </p>
+            <div className="row">
+              <Link className="btn btn--ink" href="#events">Find something to go to</Link>
+              <Link className="btn" href="/studio">Design your own</Link>
+            </div>
+          </div>
+          <div className="fan" aria-hidden="true">
+            <Ticket {...sample(2)} state="sample" />
+            <Ticket {...sample(0)} state="sample" />
+            <Ticket {...sample(1)} state="sample" />
           </div>
         </div>
 
-        <section className="wrap">
-          <div className="grid3">
-            <div className="card">
-              <div className="kpi">Your design</div>
-              <h3>Storefronts you control</h3>
-              <p>Themes, layout blocks, fonts, your own domain, an embeddable checkout widget, or go headless with the API.</p>
+        <div className="wrap">
+          <p className="kinds" aria-label="Works for">{KINDS.map((k) => <span key={k}>{k}</span>)}</p>
+        </div>
+
+        <section className="wrap section" id="ways" aria-labelledby="ways-h">
+          <div className="section__head">
+            <p className="mono">Three ways in</p>
+            <h2 id="ways-h">Every guest ends up with the same ticket.</h2>
+            <p className="lede">Hosts choose which doors are open. One event can use all three.</p>
+          </div>
+          <div className="ways">
+            <article className="way way--mint">
+              <span className="mono">01 · Free</span>
+              <h3>RSVP</h3>
+              <p>Say going, maybe or can’t go. Bring plus-ones, answer the host’s questions, and join the waitlist if it’s full.</p>
+              <ul><li>No account, no app</li><li>Capacity and waitlist handled for you</li></ul>
+            </article>
+            <article className="way way--marigold">
+              <span className="mono">02 · Paid</span>
+              <h3>Buy</h3>
+              <p>Pick a ticket and pay the way you already do: GCash, Maya, QR, cards or PayPal.</p>
+              <ul><li>Local payment methods first</li><li>Hosts get paid as they sell</li></ul>
+            </article>
+            <article className="way way--salmon">
+              <span className="mono">03 · Points</span>
+              <h3>Earn</h3>
+              <p>Bring friends, show up, keep coming back. Points turn into a free ticket, a fast lane or a coffee.</p>
+              <ul><li>Points land when friends are scanned in</li><li>Hosts cap what they give away</li></ul>
+            </article>
+          </div>
+        </section>
+
+        <section className="wrap section" id="events" aria-labelledby="events-h" style={{ paddingTop: 0 }}>
+          <div className="section__head">
+            <p className="mono">Try it</p>
+            <h2 id="events-h">Demo events, real flow.</h2>
+            <p className="lede">Each one is set up differently. RSVP, buy or earn, then scan your own ticket with the door scanner.</p>
+          </div>
+          <div className="events">
+            {EVENTS.map((e) => {
+              const [, day, month] = e.dateLabel.split(" ");
+              return (
+                <Link key={e.slug} href={`/e/${e.slug}`} className="ev-card themed" style={designVars(e.design)}>
+                  <div className="ev-card__date">
+                    <span className="mono">{month}</span>
+                    <span className="ev-card__day">{day}</span>
+                    <span className="mono">{e.dateLabel.split(" ")[0]}</span>
+                  </div>
+                  <div className="ev-card__body">
+                    <span className="mono">{e.kind} · {e.city}</span>
+                    <h3>{e.title}</h3>
+                    <p className="muted">{e.tagline}</p>
+                    <p className="ev-card__foot">{priceLine(e)}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="band band--sky" id="stubs" aria-labelledby="stubs-h">
+          <div className="wrap section split">
+            <div className="stack" style={{ "--gap": "18px" } as React.CSSProperties}>
+              <p className="mono">After the door scan</p>
+              <h2 id="stubs-h">The ticket tears. The stub is yours.</h2>
+              <p className="lede">When a ticket is scanned it turns into a numbered stub: proof you were there, in the host’s own design.</p>
+              <ul className="checks">
+                <li>Numbered in the order people walked in</li>
+                <li>Collected on your phone and in your wallet pass</li>
+                <li>Counts toward rewards and early access next time</li>
+                <li>No crypto wallet, no sign-up</li>
+              </ul>
+              <div><Link className="btn btn--ink" href="/me">See my collection</Link></div>
             </div>
-            <div className="card" id="payments">
-              <div className="kpi">4+ gateways</div>
-              <h3>Every way to pay</h3>
-              <p>Cards, e-wallets, QR and PayPal, routed to the cheapest healthy gateway, with automatic failover. Or connect your own merchant account.</p>
-            </div>
-            <div className="card" id="payouts">
-              <div className="kpi">T+1</div>
-              <h3>Fast clearing</h3>
-              <p>Rolling daily payouts with a small risk-based reserve, and instant payouts for trusted organizers, instead of holding your revenue until after the event.</p>
+            <div className="stub-pile" aria-hidden="true">
+              <Ticket {...sample(0)} name="Mika R." tier="General Admission" state="stub" serial="0421" />
+              <Ticket {...sample(3)} name="Mika R." tier="Guest list" state="stub" serial="0017" />
             </div>
           </div>
         </section>
 
-        <section className="wrap">
-          <h2>Local methods first, wherever your buyers are</h2>
-          <p className="muted">Checkout shows each buyer the methods common in their country first.</p>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Market</th><th>Methods</th><th>Gateways</th></tr>
-              </thead>
-              <tbody>
-                {GATEWAYS.map((g) => (
-                  <tr key={g.region}>
-                    <td className="us">{g.region}</td>
-                    <td><div className="chips">{g.methods.map((m) => <span key={m} className="chip">{m}</span>)}</div></td>
-                    <td className="muted">{g.via}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <section className="wrap section" aria-labelledby="yours-h">
+          <div className="section__head">
+            <p className="mono">Make it yours</p>
+            <h2 id="yours-h">One design for the page, the ticket and the stub.</h2>
+            <p className="lede">Colours, type, pattern and mark. The studio checks your colours stay readable for everyone.</p>
+          </div>
+          <div className="grid-3" aria-hidden="true">
+            <Ticket {...sample(2)} state="sample" />
+            <Ticket {...sample(4)} state="sample" />
+            <Ticket {...sample(3)} state="sample" />
+          </div>
+          <div style={{ marginTop: 28 }}><Link className="btn btn--ink" href="/studio">Open the design studio</Link></div>
+        </section>
+
+        <section className="wrap section" aria-labelledby="easy-h" style={{ paddingTop: 0 }}>
+          <div className="section__head">
+            <p className="mono">Ease of access</p>
+            <h2 id="easy-h">Easy for every guest, on any phone.</h2>
+          </div>
+          <div className="grid-3">
+            <div className="card"><h3>No app, no account</h3><p className="muted">A link is enough. Tickets are saved on the phone that RSVP’d.</p></div>
+            <div className="card"><h3>In your phone wallet</h3><p className="muted">Apple Wallet and Google Wallet passes, plus add-to-calendar.</p></div>
+            <div className="card"><h3>Big, bright QR</h3><p className="muted">A full-screen code for cracked screens and dim doorways, with a typed fallback.</p></div>
+            <div className="card"><h3>Readable by design</h3><p className="muted">High contrast, large touch targets, keyboard and screen-reader support on every page.</p></div>
+            <div className="card"><h3>Works on weak signal</h3><p className="muted">Light pages, and a ticket that still shows once it has loaded.</p></div>
+            <div className="card"><h3>Pay your way</h3><p className="muted">Local e-wallets and QR payments sit ahead of cards.</p></div>
           </div>
         </section>
 
-        <section className="wrap" id="compare">
-          <h2>How we compare</h2>
-          <p className="muted small">
-            Competitor details are from their public help pages as of Nov 2026 and may change. Check them for current terms.
-          </p>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr><th></th><th>Eventbrite</th><th>HelixPay</th><th>Stagepass</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Payment rails</td>
-                  <td>Own processing; PayPal where unavailable, with Eventbrite fees invoiced monthly</td>
-                  <td>PH local methods via PayMongo</td>
-                  <td className="us good">Multi-gateway routing + bring your own account</td>
-                </tr>
-                <tr>
-                  <td>Storefront</td>
-                  <td>Fixed event-page template</td>
-                  <td>Branded pages</td>
-                  <td className="us good">Theme engine, custom domain, embed, headless API</td>
-                </tr>
-                <tr>
-                  <td>Payout timing</td>
-                  <td className="warn">Default: sent 3 business days after the event ends</td>
-                  <td>Not publicly documented</td>
-                  <td className="us good">T+1 after each sale (risk-based reserve); instant for trusted organizers</td>
-                </tr>
-                <tr>
-                  <td>On-sale protection</td>
-                  <td>Standard</td>
-                  <td>Anti-scalping, QR scanning</td>
-                  <td className="us good">Virtual waiting room, rotating QR, capped resale</td>
-                </tr>
-              </tbody>
-            </table>
+        <section className="band band--ink" aria-labelledby="org-h">
+          <div className="wrap section stack" style={{ "--gap": "18px" } as React.CSSProperties}>
+            <h2 id="org-h" style={{ maxWidth: "18ch" }}>Hosting something?</h2>
+            <p style={{ maxWidth: "54ch", fontSize: "1.15rem" }}>See a live guest list, how people got in, what the rewards cost you, and when you get paid.</p>
+            <div className="row">
+              <Link className="btn btn--marigold" href="/organizers">For organizers</Link>
+              <Link className="btn btn--mint" href={`/host/${EVENTS[0].slug}`}>Open a host dashboard</Link>
+              <Link className="btn btn--sky" href="/scan">Door scanner</Link>
+            </div>
           </div>
-        </section>
-
-        <section className="wrap" id="architecture">
-          <h2>How it&apos;s built</h2>
-          <p className="muted">
-            A modular monolith on Vercel with a payment-orchestration layer, a double-entry ledger and a risk-based payout
-            engine. The full design is in <code>docs/ARCHITECTURE.md</code>.
-          </p>
-          <pre className="diagram">{DIAGRAM}</pre>
         </section>
       </main>
-      <footer>
-        <div className="wrap">
-          Stagepass is a prototype. Payments run in sandbox mode and no real charges are made.
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
