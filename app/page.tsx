@@ -24,6 +24,7 @@ export default function Home() {
             <div className="row">
               <Link className="btn btn--primary btn--lg" href="#events">Find an event</Link>
               <Link className="btn btn--lg" href="/signup">Host an event</Link>
+              <Link className="btn btn--lg btn--ghost" href="/demo">▶ Watch the demo</Link>
             </div>
             <ul className="trust">
               <li>No app or account needed</li>

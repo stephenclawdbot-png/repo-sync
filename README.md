@@ -10,6 +10,7 @@ Live prototype: https://stagepass-sigma.vercel.app
 | Where | What |
 |---|---|
 | `/` | Landing page and ten sample events |
+| `/demo` | 80-second showcase video (`public/demo/stagepass-demo.mp4`) |
 | `/signup` | Sign up as a guest or a merchant, or load a ready-made demo account for either |
 | `/me` | Guest account: profile, upcoming tickets, stub collection, points |
 | `/dashboard` | Merchant back office: create events, watch the guest list, design the storefront |

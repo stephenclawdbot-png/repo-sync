@@ -6,6 +6,7 @@ const LINKS = [
   { href: "/#events", label: "Events" },
   { href: "/organizers", label: "For organizers" },
   { href: "/studio", label: "Design studio" },
+  { href: "/demo", label: "Demo video" },
 ];
 
 export function SiteHeader() {
