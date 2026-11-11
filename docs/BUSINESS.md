@@ -2,7 +2,11 @@
 
 ## 1. Positioning
 
-**"Your brand. Every payment method. Your money tomorrow."**
+**"RSVP, buy or earn your way in — and keep the stub."**
+
+An RSVP platform for any gathering (see `PRODUCT.md`). Free RSVPs are the growth engine; paid tickets,
+Pro plans and earn/sponsor features are the revenue. The payment and payout advantages below are the pitch
+for the paid-ticket path: *"Your brand. Every payment method. Your money tomorrow."*
 
 Target customers, in order:
 1. **Mid-size organizers in Southeast Asia** (concerts, festivals, conferences, fun runs, workshops) that
@@ -14,11 +18,13 @@ Target customers, in order:
 
 | Stream | Pricing (starting point to test) |
 |---|---|
+| Free RSVP events | Free (acquisition). Optional paid SMS/chat credits |
 | Ticket fee | 3.5 % + ₱15 / $0.50 per paid ticket (buyer-pays or organizer-absorbs, organizer's choice). Free events free. |
 | Payment processing | Pass-through gateway cost + small margin when platform-collected; **0 margin when organizer brings their own gateway** |
 | Instant payouts | 1 % of payout amount (covers working capital) |
 | Pro plan | Monthly subscription: custom domain, remove branding, advanced themes, API, priority support |
 | Enterprise | Waiting room, dedicated seat-map design, on-site scanning hardware and staff |
+| Earn / sponsors | Sponsor-funded quests (rev-share), ambassador tools in Pro |
 | Add-ons | Ticket protection / refund insurance (rev-share), SMS credits, resale fee (buyer side) |
 
 Unit-economics notes: gateway fees in SEA vary (~2–3.5 % card, ~1.5–2.5 % e-wallet, flat fee for QR/bank),

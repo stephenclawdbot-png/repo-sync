@@ -1,8 +1,9 @@
 # Stagepass — Architecture & System Design
 
-> Working name. A ticketing + commerce platform for event organizers that fixes the
-> three main complaints about incumbent platforms: **one payment rail**, **rigid storefronts**,
-> and **slow payouts**.
+> Working name. An **RSVP platform for any gathering**: guests get in by RSVP (free), Buy (paid) or
+> Earn (quests → points → ticket). Every entry is a QR ticket that becomes a collectible stub at check-in.
+> Product scope is in `PRODUCT.md`. Sections 1–9 below were written for the paid-ticket (Buy) path and
+> still apply to it; **section 10 adds the RSVP, Earn, Stub and Wallet-pass modules.**
 
 ---
 
@@ -265,3 +266,74 @@ outbox(id, aggregate, type, payload, published_at)
 | **v1 (3–6 mo)** | Reserved seating, custom domains, embed widget, PayPal + local QR rails, promo codes, organizer webhooks |
 | **v2 (6–12 mo)** | Waiting room, instant payouts, rotating QR, resale, merch + memberships, BYO gateway, headless API |
 | **Scale** | Split Inventory/Payments services, multi-region, own payment licence, insurance-backed payouts |
+
+---
+
+## 10. RSVP, Earn, Stubs and Wallet passes
+
+### 10.1 Added modules
+
+```
+                 ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+  RSVP path ───▶ │ Registration │   │ Rewards      │   │ Stubs        │
+  Buy path  ───▶ │ (RSVP, forms,│   │ (quests,     │   │ (collection, │
+  Earn path ───▶ │ approval,    │   │ points ledger│   │ artwork,     │
+                 │ waitlist)    │   │ redemption)  │   │ perks)       │
+                 └──────┬───────┘   └──────┬───────┘   └──────▲───────┘
+                        │ entitlement      │ reward:ticket    │ checkin.recorded
+                        ▼                  ▼                  │
+                 ┌─────────────────────────────────┐   ┌──────┴───────┐
+                 │ Ticketing (one issuer for all    │──▶│ Check-in     │
+                 │ three paths; QR + Wallet passes) │   │ (scanner)    │
+                 └─────────────────────────────────┘   └──────────────┘
+```
+
+**One issuer.** RSVP confirmed, payment succeeded, and reward redeemed all emit the same
+`entitlement.granted` event. Ticketing is the only module that creates tickets, so capacity, QR signing,
+passes and transfers behave identically whichever way the guest got in.
+
+### 10.2 Registration (RSVP)
+- `rsvps(id, event_id, guest_id, status[going|maybe|declined|pending|waitlisted], plus_ones, answers_json, source)`
+- Capacity uses the same atomic counter as paid tiers (§4.2); a free RSVP tier is a tier with price 0.
+- Waitlist: when a spot frees, offer it to the next guest with a timed claim link (default 12 h), then move on.
+- Approval: `pending → going` by host action; for paid tiers the gateway authorises on apply and captures on approval.
+- Identity: phone or email + one-time code. A `guest` row exists without a password or app.
+
+### 10.3 Rewards (Earn)
+- Point balances are a **second ledger** built like the money ledger (§4.5): append-only entries, balance = sum.
+  Kept separate from money so points can never be confused with funds.
+- `quests(id, organizer_id, event_id?, trigger, points, per_guest_limit, budget, starts_at, ends_at)`
+- `point_entries(id, guest_id, organizer_id, amount, reason, ref_type, ref_id, created_at)`
+- `rewards(id, organizer_id, type, cost_points, stock, tier_id?)` · `redemptions(id, guest_id, reward_id, status)`
+- `referrals(id, event_id, referrer_guest_id, referred_guest_id, status[clicked|rsvped|checked_in|purchased])`
+- Triggers are consumers of the event bus: `checkin.recorded`, `order.paid` (after refund window),
+  `rsvp.confirmed`, `staff.award`. Each handler is idempotent on `(quest_id, ref_id)`.
+- Redemption for a ticket runs the same hold → issue saga as checkout, with points debited instead of a payment.
+- Abuse controls: verified phone, device and payment-method fingerprints, credit on check-in instead of sign-up,
+  per-quest budgets, velocity limits, clawback entries when a referred order is refunded.
+
+### 10.4 Stubs
+- `stubs(id, ticket_id, guest_id, event_id, serial, variant, artwork_ref, extras_json, minted_at)`
+- Minted by a consumer of `checkin.recorded` (first valid scan only). Serial = order of entry.
+- Artwork rendered server-side from the organizer's template (`@vercel/og` / Satori) → cached image for sharing.
+- Perks are rules over stubs: `has_stub(event) → presale access`, `count_stubs(organizer) ≥ 3 → reward`.
+- Stored in Postgres and signed with the ticket key; an optional export job can mint on-chain later.
+
+### 10.5 Wallet passes
+- **Apple:** `.pkpass` bundle (pass.json + images) signed with the Pass Type ID certificate. A web service
+  endpoint lets Wallet register devices; we push updates through APNs when time, venue or status changes
+  (including flipping the pass to its "attended" stub state). Poster event ticket layout for eligible
+  sports/live-performance events; standard event pass otherwise.
+- **Google:** one `EventTicketClass` per event, one `EventTicketObject` per ticket, "Add to Google Wallet"
+  link is a signed JWT. Updates via REST patch.
+- Certificates and issuer keys live in encrypted env / KMS; signing happens only server-side.
+- The QR payload in both passes is the same signed ticket token the web ticket shows.
+
+### 10.6 Design templates
+- One `design_templates(id, organizer_id, kind[page|ticket|stub|email], json)` table. Ticket, pass and stub
+  render from the same template so a change applies everywhere.
+
+### 10.7 Accessibility as a system requirement
+- Component library with accessible primitives; automated axe checks on every page in CI; contrast checked
+  when an organizer picks theme colours (the editor auto-corrects text colour to keep 4.5:1).
+- Guest flows work without JavaScript-heavy bundles and on slow connections; ticket page is cacheable offline.
