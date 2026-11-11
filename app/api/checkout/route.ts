@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { counts, existingTicket, issueTicket, recordReferral } from "@/lib/core";
 import { platformFee } from "@/lib/events";
 import { clampInt, fail, readJson } from "@/lib/http";
+import { saveOrder } from "@/lib/orders";
+import { createCheckoutSession, PAYMONGO_METHODS, paymongoLive } from "@/lib/payments/paymongo";
 import { routePayment } from "@/lib/payments/router";
 import type { PaymentMethod } from "@/lib/payments/types";
 import { fields, store } from "@/lib/store";
@@ -19,8 +21,8 @@ interface Body {
 }
 
 /**
- * Sandbox checkout: routes the payment to a gateway, treats it as paid, and issues the ticket.
- * No real charge is made. In production the ticket is issued from the gateway's webhook instead.
+ * Checkout. With a PayMongo key set, this starts a real hosted payment. Without one it runs in sandbox:
+ * the payment is treated as paid and the ticket is issued at once, with no charge.
  */
 export async function POST(req: Request) {
   const body = await readJson<Body>(req);
@@ -56,6 +58,35 @@ export async function POST(req: Request) {
     return fail("That payment method is not available for this event.", 422);
   }
   const orderId = `ord_${newId(10)}`;
+  const ref = isId(body.ref) ? body.ref : undefined;
+
+  // Real payments: PayMongo is connected. Send the buyer to its hosted checkout; the ticket is issued
+  // only after PayMongo confirms the payment (on return, and by webhook).
+  if (paymongoLive()) {
+    if (!PAYMONGO_METHODS[body.method]) return fail("That payment method is not available yet. Choose another.", 422);
+    const origin = new URL(req.url).origin;
+    try {
+      await saveOrder({ id: orderId, slug: ev.slug, gid: body.gid, name, tierId: tier.id, qty, ref, totalMinor: amount.amount, createdAt: Date.now() });
+      const session = await createCheckoutSession({
+        orderId,
+        description: `${ev.title}: ${qty} × ${tier.name}`,
+        lines: [
+          { name: `${ev.title} · ${tier.name}`, amount: tier.priceMinor, quantity: qty },
+          { name: "Service fee", amount: fee, quantity: 1 },
+        ],
+        method: body.method,
+        successUrl: `${origin}/api/checkout/return?order=${orderId}`,
+        cancelUrl: `${origin}/e/${ev.slug}?pay=cancelled`,
+      });
+      await saveOrder({ id: orderId, slug: ev.slug, gid: body.gid, name, tierId: tier.id, qty, ref, totalMinor: amount.amount, sessionId: session.id, createdAt: Date.now() });
+      return NextResponse.json({ status: "redirect", url: session.url, orderId, gateway: "PayMongo" });
+    } catch (e) {
+      console.error("paymongo checkout failed", e);
+      return fail("We couldn’t start the payment. Please try again in a moment.", 502);
+    }
+  }
+
+  // Sandbox: no gateway key is set, so nothing is charged and the ticket is issued straight away.
   await decision.gateway.createIntent({
     orderId,
     idempotencyKey: newId(16),
@@ -70,7 +101,7 @@ export async function POST(req: Request) {
   const admits = held?.via === "buy" && held.tier === tier.id ? held.admits + qty : qty;
   const token = await issueTicket(ev, { gid: body.gid, name, via: "buy", tier: tier.id, admits, replace: true });
   await store.remove(`wait/${ev.slug}/${body.gid}~`);
-  await recordReferral(ev, body.gid, isId(body.ref) ? body.ref : undefined);
+  await recordReferral(ev, body.gid, ref);
 
   return NextResponse.json({
     status: "paid",

@@ -54,7 +54,7 @@ export default function Organizers() {
                 <tbody>{METHODS.map((m) => <tr key={m.market}><td><strong>{m.market}</strong></td><td>{m.methods}</td><td className="muted">{m.via}</td></tr>)}</tbody>
               </table>
             </div>
-            <p className="hint">Payments in this prototype run in sandbox mode. Gateway accounts are needed before real money moves.</p>
+            <p className="hint">PayMongo is the default gateway. It runs in sandbox until a PayMongo key is added; the other gateways are planned.</p>
           </section>
         </div>
       </main>

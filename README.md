@@ -28,7 +28,8 @@ scan or paste the ticket link → the ticket page flips to a stub by itself.
 - **Real:** RSVP with capacity, plus-ones, questions and waitlist; signed tickets; door check-in with
   duplicate detection; stubs; points, referrals and reward redemption with budgets; merchant sign-up, event
   creation and storefront editing; Apple/Google Wallet pass generation (see below).
-- **Sandbox:** payments. Checkout picks a gateway and issues the ticket, but nothing is charged.
+- **Payments:** PayMongo is the default gateway (GCash, Maya, QR Ph, GrabPay, cards). Until a PayMongo key
+  is set, checkout runs in sandbox: it issues the ticket at once and charges nothing.
 - **Demo-grade:** accounts. There is no password or email/phone verification; a guest or merchant session
   lives in the browser. Storage is a small record store on Vercel Blob, not the Postgres design in the docs.
 
@@ -40,6 +41,19 @@ Buttons appear on every ticket and switch on when credentials are set as environ
   (optional `APPLE_PASS_KEY_PASSPHRASE`). Needs an Apple Developer account.
 - Google: `GOOGLE_WALLET_ISSUER_ID`, `GOOGLE_WALLET_SA_EMAIL`, `GOOGLE_WALLET_SA_KEY`. Needs a Google Wallet
   issuer account.
+
+## Payments (PayMongo)
+
+Set these to switch from sandbox to PayMongo's hosted checkout:
+
+- `PAYMONGO_SECRET_KEY`: a test key (`sk_test_…`) uses PayMongo's test mode; a live key takes real money.
+- `PAYMONGO_WEBHOOK_SECRET`: the signing secret of a webhook registered in PayMongo for
+  `https://<your-domain>/api/webhooks/paymongo`, event `checkout_session.payment.paid`.
+
+The buyer pays on PayMongo's page and returns; the ticket is issued only after PayMongo confirms payment
+(checked on return, and again by webhook in case the tab was closed). This was built to PayMongo's published
+API and tested against a stand-in server, not yet against PayMongo itself. Run a test-key payment before going live.
+Known gap: seats are not held while a buyer is on the payment page.
 
 Other settings: `TICKET_SECRET` (signs tickets and merchant sessions), `BLOB_READ_WRITE_TOKEN` (storage; without
 it the app keeps data in memory).

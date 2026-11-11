@@ -7,11 +7,12 @@ import { Poster } from "@/components/Poster";
 import { SiteHeader } from "@/components/SiteHeader";
 import { counts } from "@/lib/core";
 import { designVars, paths, priceLine } from "@/lib/events";
+import { paymongoLive } from "@/lib/payments/paymongo";
 import { isId } from "@/lib/token";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ ref?: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ ref?: string; pay?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ev = (await findEvent((await params).slug));
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function EventPage({ params, searchParams }: Props) {
   const ev = (await findEvent((await params).slug));
   if (!ev) notFound();
-  const ref = (await searchParams).ref;
+  const { ref, pay } = await searchParams;
   const c = await counts(ev);
   const { doorCode: _door, ...pub } = ev;
   const publicEvent: PublicEvent = pub;
@@ -106,7 +107,7 @@ export default async function EventPage({ params, searchParams }: Props) {
             </div>
           </section>
         ) : (
-          <EntryPanel ev={publicEvent} refGid={isId(ref) ? ref : undefined} spotsLeft={c.spotsLeft} />
+          <EntryPanel ev={publicEvent} refGid={isId(ref) ? ref : undefined} spotsLeft={c.spotsLeft} live={paymongoLive()} payState={pay === "cancelled" || pay === "pending" ? pay : undefined} />
         )}
       </main>
     </div>

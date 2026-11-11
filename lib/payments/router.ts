@@ -23,12 +23,16 @@ export interface RouteDecision {
 
 const MIN_HEALTHY_SUCCESS_RATE = 0.85;
 
+/** The platform's default gateway. Others are only used for methods or markets it does not cover. */
+export const DEFAULT_GATEWAY: GatewayId = "paymongo";
+
 /**
  * Choose a gateway for a payment.
  *  1. Must support method + currency + country and be enabled by the organizer.
  *  2. Unhealthy gateways (success rate below threshold) are skipped unless nothing else works.
  *  3. A bring-your-own connected account wins (fastest payout, organizer's own contract).
- *  4. Otherwise the cheapest gateway wins.
+ *  4. Otherwise the default gateway (PayMongo) takes the payment if it supports it.
+ *  5. Failing that, the cheapest gateway wins.
  */
 export function routePayment(
   method: PaymentMethod,
@@ -51,12 +55,13 @@ export function routePayment(
   }
 
   const pool = candidates.some((c) => c.healthy) ? candidates.filter((c) => c.healthy) : candidates;
-  pool.sort((a, b) => Number(b.byo) - Number(a.byo) || a.fee - b.fee);
+  const isDefault = (c: (typeof pool)[number]) => Number(c.gateway.id === DEFAULT_GATEWAY);
+  pool.sort((a, b) => Number(b.byo) - Number(a.byo) || isDefault(b) - isDefault(a) || a.fee - b.fee);
   const pick = pool[0];
 
   const skipped = candidates.filter((c) => !c.healthy).map((c) => c.gateway.displayName);
   const reason = [
-    pick.byo ? "organizer's own connected account" : "lowest processing cost",
+    pick.byo ? "organizer's own connected account" : pick.gateway.id === DEFAULT_GATEWAY ? "default gateway" : "lowest processing cost",
     skipped.length ? `failover: skipped ${skipped.join(", ")} (degraded)` : null,
   ]
     .filter(Boolean)

@@ -54,7 +54,9 @@ function NameField({ value, onChange, label = "Your name" }: { value: string; on
   );
 }
 
-interface FormProps { ev: PublicEvent; refGid?: string; onIssued: (token: string) => void }
+interface FormProps { ev: PublicEvent; refGid?: string; onIssued: (token: string) => void; live?: boolean }
+
+const LIVE_METHODS: PaymentMethod[] = ["gcash", "maya", "qrph", "grabpay", "card"];
 
 /* ------------------------------------------------------------------ RSVP */
 
@@ -148,11 +150,12 @@ function RsvpForm({ ev, refGid, onIssued }: FormProps) {
 
 /* ------------------------------------------------------------------- Buy */
 
-interface BuyResult { status: "paid" | "waitlisted"; token?: string; admits?: number; gateway?: string; position?: number }
+interface BuyResult { status: "paid" | "waitlisted" | "redirect"; token?: string; admits?: number; gateway?: string; position?: number; url?: string }
 
-function BuyForm({ ev, refGid, onIssued }: FormProps) {
+function BuyForm({ ev, refGid, onIssued, live }: FormProps) {
   const { guest, setName, addTicket } = useGuest();
-  const methods = (LOCAL_METHODS[ev.country] ?? ["card"]) as PaymentMethod[];
+  // With PayMongo connected, only offer what it can take.
+  const methods = ((LOCAL_METHODS[ev.country] ?? ["card"]) as PaymentMethod[]).filter((m) => !live || LIVE_METHODS.includes(m));
   const [tierId, setTierId] = useState(ev.tiers[0].id);
   const [qty, setQty] = useState(1);
   const [method, setMethod] = useState<PaymentMethod>(methods[0]);
@@ -175,6 +178,10 @@ function BuyForm({ ev, refGid, onIssued }: FormProps) {
     try {
       const r = await post<BuyResult>("/api/checkout", { slug: ev.slug, gid: guest.gid, name, tierId, qty, method, ref: refGid });
       setName(name);
+      if (r.status === "redirect" && r.url) {
+        window.location.assign(r.url); // PayMongo's hosted checkout; the ticket is issued when the buyer returns paid
+        return;
+      }
       if (r.token) { addTicket(r.token); onIssued(r.token); }
       setRes(r);
     } catch (e) {
@@ -232,7 +239,9 @@ function BuyForm({ ev, refGid, onIssued }: FormProps) {
       <button className="btn btn--primary btn--block btn--lg" disabled={busy}>
         {busy ? "Paying…" : `Pay ${money(subtotal + fee)} with ${METHOD_LABEL[method]}`}
       </button>
-      <p className="hint" style={{ textAlign: "center" }}>Sandbox mode: nothing is charged, and the ticket is issued straight away.</p>
+      <p className="hint" style={{ textAlign: "center" }}>
+        {live ? "You’ll finish paying on PayMongo’s secure page, then come back here for your ticket." : "Sandbox mode: nothing is charged, and the ticket is issued straight away."}
+      </p>
 
       <div aria-live="polite" className="stack">
         {err && <div className="note note--bad" role="alert"><strong>That didn’t work</strong>{err}</div>}
@@ -375,7 +384,7 @@ function EarnPanel({ ev, refGid, onIssued }: FormProps) {
 
 /* ----------------------------------------------------------------- Panel */
 
-export function EntryPanel({ ev, refGid, spotsLeft }: { ev: PublicEvent; refGid?: string; spotsLeft: number }) {
+export function EntryPanel({ ev, refGid, spotsLeft, live, payState }: { ev: PublicEvent; refGid?: string; spotsLeft: number; live?: boolean; payState?: string }) {
   const available = paths(ev as EventDef);
   const [tab, setTabState] = useState<Via>(available[0]);
   const [fresh, setFresh] = useState("");
@@ -472,7 +481,9 @@ export function EntryPanel({ ev, refGid, spotsLeft }: { ev: PublicEvent; refGid?
             </div>
           )}
           {tab === "rsvp" && !showHeld && <RsvpForm ev={ev} refGid={refGid} onIssued={setFresh} />}
-          {tab === "buy" && !showHeld && <BuyForm ev={ev} refGid={refGid} onIssued={setFresh} />}
+          {payState === "cancelled" && tab === "buy" && <div className="note note--warn" role="status"><strong>Payment cancelled.</strong>Nothing was charged. You can try again below.</div>}
+          {payState === "pending" && tab === "buy" && <div className="note note--warn" role="status"><strong>We’re still waiting for your payment.</strong>If you paid, your ticket appears in My tickets within a minute. If not, you can try again below.</div>}
+          {tab === "buy" && !showHeld && <BuyForm ev={ev} refGid={refGid} onIssued={setFresh} live={live} />}
           {tab === "earn" && <EarnPanel ev={ev} refGid={refGid} onIssued={setFresh} />}
         </div>
       </section>

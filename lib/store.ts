@@ -17,6 +17,8 @@ export interface Store {
   remove(prefix: string): Promise<number>;
   /** Small JSON documents (merchant profiles, merchant-created events). */
   putDoc(key: string, doc: unknown): Promise<void>;
+  /** Create `key` only if it does not exist. True if this call created it. */
+  claim(key: string): Promise<boolean>;
   getDoc<T>(key: string): Promise<T | null>;
 }
 
@@ -60,6 +62,14 @@ const blobStore: Store = {
       contentType: "application/json",
     });
   },
+  async claim(key) {
+    try {
+      await put(ROOT + key, "1", { access: "private", addRandomSuffix: false, allowOverwrite: false, contentType: "text/plain" });
+      return true;
+    } catch {
+      return false;
+    }
+  },
   async getDoc<T>(key: string) {
     const res = await get(ROOT + key, { access: "private", useCache: false });
     if (!res || res.statusCode !== 200) return null;
@@ -86,6 +96,11 @@ const memoryStore: Store = {
   },
   async putDoc(key, doc) {
     docs.set(key, JSON.stringify(doc));
+  },
+  async claim(key) {
+    if (mem.has(key)) return false;
+    mem.add(key);
+    return true;
   },
   async getDoc<T>(key: string) {
     const raw = docs.get(key);
