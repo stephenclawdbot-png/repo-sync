@@ -76,13 +76,13 @@ export function SignupClient() {
   return (
     <div className="choice">
       <section className="card" aria-labelledby="su-g">
-        <span className="chip chip--mint choice__tag">Guest</span>
+        <span className="chip chip--rsvp choice__tag">Guest</span>
         <h2 id="su-g" style={{ fontSize: "1.9rem" }}>I’m going to things</h2>
         <p className="muted">A profile, your tickets, your stub collection and your points in one place.</p>
         <form onSubmit={guestSignup} className="stack">
           <div className="field"><label htmlFor="su-gn">Your name</label><input id="su-gn" type="text" autoComplete="name" maxLength={40} value={gName} onChange={(e) => setGName(e.target.value)} /></div>
           <div className="field"><label htmlFor="su-gc">City (optional)</label><input id="su-gc" type="text" autoComplete="address-level2" maxLength={30} value={gCity} onChange={(e) => setGCity(e.target.value)} /></div>
-          <button className="btn btn--mint btn--block">Create my guest account</button>
+          <button className="btn btn--primary btn--block">Create my guest account</button>
         </form>
         <button className="btn btn--block" onClick={demoGuest} disabled={busy === "demo-guest"}>
           {busy === "demo-guest" ? "Loading Mika’s account…" : "Use the demo guest: Mika Reyes"}
@@ -92,7 +92,7 @@ export function SignupClient() {
       </section>
 
       <section className="card" aria-labelledby="su-m">
-        <span className="chip chip--marigold choice__tag">Merchant</span>
+        <span className="chip chip--buy choice__tag">Merchant</span>
         <h2 id="su-m" style={{ fontSize: "1.9rem" }}>I’m hosting</h2>
         <p className="muted">A back office to create events and watch the guest list, and a public storefront you design yourself.</p>
         <form onSubmit={merchantSignup} className="stack">
@@ -105,7 +105,7 @@ export function SignupClient() {
             <input id="su-mh" type="text" autoComplete="off" maxLength={24} value={mHandle} onChange={(e) => { setHandleEdited(true); setMHandle(handleOf(e.target.value)); }} aria-describedby="su-mh-h" />
             <p className="hint" id="su-mh-h">Your storefront will be at /s/{mHandle || "your-name"}</p>
           </div>
-          <button className="btn btn--marigold btn--block" disabled={busy === "merchant"}>{busy === "merchant" ? "Creating…" : "Create my merchant account"}</button>
+          <button className="btn btn--primary btn--block" disabled={busy === "merchant"}>{busy === "merchant" ? "Creating…" : "Create my merchant account"}</button>
         </form>
         <button className="btn btn--block" onClick={demoMerchant} disabled={busy === "demo-merchant"}>
           {busy === "demo-merchant" ? "Setting up the market…" : "Use the demo merchant: Likha Weekend Market"}

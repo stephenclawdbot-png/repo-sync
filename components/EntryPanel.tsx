@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { type EventDef, formatMoney, paths, platformFee, type Via } from "@/lib/events";
 import { useGuest } from "@/lib/guest";
 import { LOCAL_METHODS } from "@/lib/payments/router";
@@ -24,7 +24,7 @@ async function post<T>(url: string, body: unknown): Promise<T> {
 
 function TicketLink({ token, children }: { token: string; children: ReactNode }) {
   return (
-    <Link className="btn btn--ink btn--block" href={`/t/${token}`}>
+    <Link className="btn btn--primary btn--block btn--lg" href={`/t/${token}`}>
       {children}
     </Link>
   );
@@ -88,6 +88,19 @@ function RsvpForm({ ev, refGid, onIssued }: FormProps) {
     }
   }
 
+  if (res?.status === "going" && res.token) {
+    return (
+      <div className="stack" role="status">
+        <div className="note note--ok">
+          <strong>You’re in{res.admits && res.admits > 1 ? `, with ${res.admits - 1} guest${res.admits > 2 ? "s" : ""}` : ""}.</strong>
+          Your ticket is ready{res.earned ? `, and you earned ${res.earned} points with ${ev.org.name}` : ""}.
+        </div>
+        <TicketLink token={res.token}>Open my ticket</TicketLink>
+        <button type="button" className="btn btn--ghost btn--block" onClick={() => setRes(null)}>Change my reply</button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={submit} className="stack">
       <fieldset className="seg">
@@ -116,22 +129,13 @@ function RsvpForm({ ev, refGid, onIssued }: FormProps) {
           </div>
         ))}
 
-      <button className="btn btn--mint btn--block" disabled={busy || !guest}>
+      <button className="btn btn--primary btn--block btn--lg" disabled={busy}>
         {busy ? "Saving…" : status === "going" ? "RSVP and get my ticket" : "Send my reply"}
       </button>
-      <p className="hint">Free. No account or app needed.</p>
+      <p className="hint" style={{ textAlign: "center" }}>Free. No account or app needed.</p>
 
       <div aria-live="polite" className="stack">
         {err && <div className="note note--bad" role="alert"><strong>That didn’t work</strong>{err}</div>}
-        {res?.status === "going" && res.token && (
-          <div className="note note--ok stack">
-            <div>
-              <strong>You’re in{res.admits && res.admits > 1 ? `, with ${res.admits - 1} guest${res.admits > 2 ? "s" : ""}` : ""}.</strong>
-              Your ticket is ready{res.earned ? `, and you earned ${res.earned} points with ${ev.org.name}` : ""}.
-            </div>
-            <TicketLink token={res.token}>Open my ticket</TicketLink>
-          </div>
-        )}
         {res?.status === "maybe" && <div className="note"><strong>Marked as maybe.</strong>No spot is held until you say you’re going.</div>}
         {res?.status === "declined" && <div className="note"><strong>Got it.</strong>You’re off the list. You can change your reply any time.</div>}
         {res?.status === "waitlisted" && (
@@ -180,6 +184,19 @@ function BuyForm({ ev, refGid, onIssued }: FormProps) {
     }
   }
 
+  if (res?.status === "paid" && res.token) {
+    return (
+      <div className="stack" role="status">
+        <div className="note note--ok">
+          <strong>Paid. Your ticket admits {res.admits}.</strong>
+          Sandbox payment routed through {res.gateway}. Nothing was charged.
+        </div>
+        <TicketLink token={res.token}>Open my ticket</TicketLink>
+        <button type="button" className="btn btn--ghost btn--block" onClick={() => setRes(null)}>Buy more</button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={submit} className="stack">
       <fieldset className="seg seg--tiers">
@@ -212,19 +229,13 @@ function BuyForm({ ev, refGid, onIssued }: FormProps) {
         <div><span>Total</span><span>{money(subtotal + fee)}</span></div>
       </div>
 
-      <button className="btn btn--marigold btn--block" disabled={busy || !guest}>
+      <button className="btn btn--primary btn--block btn--lg" disabled={busy}>
         {busy ? "Paying…" : `Pay ${money(subtotal + fee)} with ${METHOD_LABEL[method]}`}
       </button>
-      <p className="hint">Sandbox mode: nothing is charged, and the ticket is issued straight away.</p>
+      <p className="hint" style={{ textAlign: "center" }}>Sandbox mode: nothing is charged, and the ticket is issued straight away.</p>
 
       <div aria-live="polite" className="stack">
         {err && <div className="note note--bad" role="alert"><strong>That didn’t work</strong>{err}</div>}
-        {res?.status === "paid" && res.token && (
-          <div className="note note--ok stack">
-            <div><strong>Paid. Your ticket admits {res.admits}.</strong>Sandbox payment routed through {res.gateway}.</div>
-            <TicketLink token={res.token}>Open my ticket</TicketLink>
-          </div>
-        )}
         {res?.status === "waitlisted" && (
           <div className="note note--warn"><strong>You’re number {res.position} on the waitlist.</strong>There aren’t enough seats left for that order. You haven’t been charged.</div>
         )}
@@ -293,11 +304,11 @@ function EarnPanel({ ev, refGid, onIssued }: FormProps) {
     <div className="stack">
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div>
-          <div className="num" aria-live="polite">{state ? state.balance : "–"} <span style={{ fontSize: "0.45em" }}>pts</span></div>
+          <div className="num" aria-live="polite">{state ? state.balance : 0} <span style={{ fontSize: "0.5em", fontWeight: 600 }}>points</span></div>
           <p className="hint" style={{ marginTop: 2 }}>with {ev.org.name}</p>
         </div>
         {state && !state.joined && (
-          <button className="btn btn--salmon" onClick={join} disabled={busy === "join"}>
+          <button className="btn btn--primary" onClick={join} disabled={busy === "join"}>
             {busy === "join" ? "Joining…" : "Join and start earning"}
           </button>
         )}
@@ -309,7 +320,7 @@ function EarnPanel({ ev, refGid, onIssued }: FormProps) {
           <div className="quest" key={q.id}>
             <strong>{q.title}</strong>
             <small>{q.desc}</small>
-            <span className={`chip pts ${done[q.id] ? "chip--mint" : ""}`}>{done[q.id] ? "✓ " : "+"}{q.points}</span>
+            <span className={`chip pts digits ${done[q.id] ? "chip--stub" : ""}`}>{done[q.id] ? "✓ " : "+"}{q.points}</span>
           </div>
         ))}
       </div>
@@ -364,56 +375,107 @@ function EarnPanel({ ev, refGid, onIssued }: FormProps) {
 
 /* ----------------------------------------------------------------- Panel */
 
-export function EntryPanel({ ev, refGid }: { ev: PublicEvent; refGid?: string }) {
+export function EntryPanel({ ev, refGid, spotsLeft }: { ev: PublicEvent; refGid?: string; spotsLeft: number }) {
   const available = paths(ev as EventDef);
   const [tab, setTabState] = useState<Via>(available[0]);
   const [fresh, setFresh] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const setTab = (v: Via) => { setTabState(v); setFresh(""); };
   const { ticketFor } = useGuest();
   const held = ticketFor(ev.slug);
   const id = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLButtonElement>(null);
+
+  // On phones the panel is a bottom sheet: trap the page behind it and give Escape a way out.
+  useEffect(() => {
+    if (!open) return;
+    closeRef.current?.focus();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+      openerRef.current?.focus();
+    };
+  }, [open]);
+
+  const cheapest = ev.tiers.length ? Math.min(...ev.tiers.map((t) => t.priceMinor)) : 0;
+  const sub: Record<Via, string> = {
+    rsvp: "Free",
+    buy: ev.tiers.length ? `from ${formatMoney(cheapest, ev.currency)}` : "",
+    earn: "Points",
+  };
+  const showHeld = Boolean(held) && held !== fresh && !editing;
 
   return (
-    <section className="panel" aria-label="Get in">
-      {available.length > 1 && (
-        <div className="tabs" role="tablist" aria-label="Ways in">
-          {available.map((v) => (
-            <button
-              key={v}
-              role="tab"
-              id={`${id}-tab-${v}`}
-              aria-selected={tab === v}
-              aria-controls={`${id}-panel`}
-              tabIndex={tab === v ? 0 : -1}
-              data-via={v}
-              onClick={() => setTab(v)}
-              onKeyDown={(e) => {
-                const i = available.indexOf(v);
-                const next = e.key === "ArrowRight" ? available[(i + 1) % available.length] : e.key === "ArrowLeft" ? available[(i - 1 + available.length) % available.length] : null;
-                if (next) { setTab(next); document.getElementById(`${id}-tab-${next}`)?.focus(); }
-              }}
-            >
-              {TAB_LABEL[v]}
-            </button>
-          ))}
+    <>
+      <div className="dock">
+        <div className="dock__info">
+          <strong>{held ? "You’re going" : ev.rsvp ? "Free RSVP" : `From ${formatMoney(cheapest, ev.currency)}`}</strong>
+          <span className="muted">{spotsLeft > 0 ? `${spotsLeft.toLocaleString("en")} spots left` : "Full: join the waitlist"}</span>
         </div>
-      )}
-      <div
-        className="panel__body stack"
-        id={`${id}-panel`}
-        role={available.length > 1 ? "tabpanel" : undefined}
-        aria-labelledby={available.length > 1 ? `${id}-tab-${tab}` : undefined}
-      >
-        {held && held !== fresh && (
-          <div className="note stack">
-            <div><strong>You have a ticket for this.</strong>It’s saved on this device.</div>
-            <TicketLink token={held}>Open my ticket</TicketLink>
+        {held ? (
+          <div className="row" style={{ gap: 8, flexWrap: "nowrap" }}>
+            {ev.earn && <button ref={openerRef} className="btn" onClick={() => { setTab("earn"); setOpen(true); }}>Earn</button>}
+            <Link className="btn btn--primary" href={`/t/${held}`}>View ticket</Link>
+          </div>
+        ) : (
+          <button ref={openerRef} className="btn btn--primary" onClick={() => setOpen(true)}>Get my pass</button>
+        )}
+      </div>
+      <button className={`sheet-backdrop ${open ? "is-open" : ""}`} aria-label="Close" tabIndex={-1} onClick={() => setOpen(false)} />
+
+      <section className={`panel ${open ? "is-open" : ""}`} aria-label="Get in" role={open ? "dialog" : undefined} aria-modal={open ? true : undefined}>
+        <div className="panel__grip">
+          <button ref={closeRef} className="btn btn--ghost btn--sm" onClick={() => setOpen(false)}>Close</button>
+        </div>
+        {available.length > 1 && (
+          <div className="tabs" role="tablist" aria-label="Ways in">
+            {available.map((v) => (
+              <button
+                key={v}
+                role="tab"
+                id={`${id}-tab-${v}`}
+                aria-selected={tab === v}
+                aria-controls={`${id}-panel`}
+                tabIndex={tab === v ? 0 : -1}
+                data-via={v}
+                onClick={() => setTab(v)}
+                onKeyDown={(e) => {
+                  const i = available.indexOf(v);
+                  const next = e.key === "ArrowRight" ? available[(i + 1) % available.length] : e.key === "ArrowLeft" ? available[(i - 1 + available.length) % available.length] : null;
+                  if (next) { setTab(next); document.getElementById(`${id}-tab-${next}`)?.focus(); }
+                }}
+              >
+                <span><span className="dot" aria-hidden="true" />{TAB_LABEL[v]}</span>
+                <small>{sub[v]}</small>
+              </button>
+            ))}
           </div>
         )}
-        {tab === "rsvp" && <RsvpForm ev={ev} refGid={refGid} onIssued={setFresh} />}
-        {tab === "buy" && <BuyForm ev={ev} refGid={refGid} onIssued={setFresh} />}
-        {tab === "earn" && <EarnPanel ev={ev} refGid={refGid} onIssued={setFresh} />}
-      </div>
-    </section>
+        <div
+          className="panel__body stack"
+          id={`${id}-panel`}
+          role={available.length > 1 ? "tabpanel" : undefined}
+          aria-labelledby={available.length > 1 ? `${id}-tab-${tab}` : undefined}
+        >
+          {showHeld && held && (
+            <div className="stack">
+              <div className="note note--ok"><strong>You have a ticket for this.</strong>It’s saved on this device.</div>
+              <TicketLink token={held}>Open my ticket</TicketLink>
+              {tab === "rsvp" && <button className="btn btn--ghost btn--block" onClick={() => setEditing(true)}>Change my reply</button>}
+              {tab === "buy" && <button className="btn btn--ghost btn--block" onClick={() => setEditing(true)}>Buy more tickets</button>}
+            </div>
+          )}
+          {tab === "rsvp" && !showHeld && <RsvpForm ev={ev} refGid={refGid} onIssued={setFresh} />}
+          {tab === "buy" && !showHeld && <BuyForm ev={ev} refGid={refGid} onIssued={setFresh} />}
+          {tab === "earn" && <EarnPanel ev={ev} refGid={refGid} onIssued={setFresh} />}
+        </div>
+      </section>
+    </>
   );
 }

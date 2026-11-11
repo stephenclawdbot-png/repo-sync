@@ -23,7 +23,7 @@ export function Studio() {
         <div className="field"><label htmlFor="st-venue">Where</label><input id="st-venue" type="text" maxLength={40} value={venue} onChange={(e) => setVenue(e.target.value)} /></div>
         <DesignControls design={d} onChange={setD} />
         <p className="hint">This is a playground. To publish a storefront and events with your design, sign up as a merchant.</p>
-        <Link className="btn btn--ink" href="/signup">Sign up to publish</Link>
+        <Link className="btn btn--primary" href="/signup">Sign up to publish</Link>
       </form>
 
       <div className="studio__preview" aria-label="Live preview">

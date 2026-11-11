@@ -21,10 +21,10 @@ export default function Organizers() {
       <main id="main">
         <div className="wrap section stack" style={{ "--gap": "18px" } as React.CSSProperties}>
           <p className="mono">For organizers</p>
-          <h1 style={{ fontSize: "clamp(2.4rem,6.5vw,4.6rem)", maxWidth: "16ch" }}>Fill the room. Know who came. Get paid sooner.</h1>
+          <h1 className="h-app">Fill the room. Know who came. Get paid sooner.</h1>
           <p className="lede">Free RSVPs cost nothing. Paid tickets take local payment methods and pay out as you sell. Rewards turn your regulars into your marketing.</p>
           <div className="row">
-            <Link className="btn btn--ink" href="/signup">Sign up as a merchant</Link>
+            <Link className="btn btn--primary" href="/signup">Sign up as a merchant</Link>
             <Link className="btn" href="/signup">Open the merchant demo</Link>
             <Link className="btn" href="/s/bayfront">See a storefront</Link>
             <Link className="btn" href="/scan">Open the door scanner</Link>
@@ -33,10 +33,10 @@ export default function Organizers() {
 
         <div className="wrap stack" style={{ "--gap": "44px" } as React.CSSProperties}>
           <section className="grid-3" aria-label="What you get">
-            <div className="card"><h2 style={{ fontSize: "1.4rem" }}>One guest list</h2><p className="muted">RSVPs, paid tickets and earned tickets land in the same list, with the same QR at the door.</p></div>
-            <div className="card"><h2 style={{ fontSize: "1.4rem" }}>Your design everywhere</h2><p className="muted">Page, ticket, wallet pass and stub share one design that you control.</p></div>
-            <div className="card"><h2 style={{ fontSize: "1.4rem" }}>Rewards with a budget</h2><p className="muted">Set what earns points and how many free tickets you’ll give. It stops when the budget is used.</p></div>
-            <div className="card"><h2 style={{ fontSize: "1.4rem" }}>A scanner on any phone</h2><p className="muted">No hardware to rent. Staff open a link, enter the door code and scan.</p></div>
+            <div className="card"><h2 className="h-sub">One guest list</h2><p className="muted">RSVPs, paid tickets and earned tickets land in the same list, with the same QR at the door.</p></div>
+            <div className="card"><h2 className="h-sub">Your design everywhere</h2><p className="muted">Page, ticket, wallet pass and stub share one design that you control.</p></div>
+            <div className="card"><h2 className="h-sub">Rewards with a budget</h2><p className="muted">Set what earns points and how many free tickets you’ll give. It stops when the budget is used.</p></div>
+            <div className="card"><h2 className="h-sub">A scanner on any phone</h2><p className="muted">No hardware to rent. Staff open a link, enter the door code and scan.</p></div>
           </section>
 
           <section className="stack" aria-labelledby="o-pay">

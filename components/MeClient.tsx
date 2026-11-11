@@ -67,7 +67,7 @@ export function MeClient() {
         admits={t.admits}
         via={t.via}
         state={t.state === "stub" ? "stub" : "sample"}
-        ticketNo="OPEN FOR QR"
+        sideNote="Tap to show QR"
         serial={t.serial ? serial(t.serial) : undefined}
       />
     </Link>
@@ -81,9 +81,9 @@ export function MeClient() {
             <div className="profile">
               <div className="avatar" aria-hidden="true">{initials(guest.name)}</div>
               <div>
-                <h2 style={{ fontSize: "clamp(1.7rem,4vw,2.4rem)" }}>{guest.name}</h2>
+                <h2 className="h-sub" style={{ fontSize: "1.5rem" }}>{guest.name}</h2>
                 <p className="muted">@{p.handle}{p.city ? ` · ${p.city}` : ""} · Member since {p.since}</p>
-                {p.demo && <span className="chip chip--sky" style={{ marginTop: 8 }}>Demo account</span>}
+                {p.demo && <span className="chip chip--stub" style={{ marginTop: 8 }}>Demo account</span>}
               </div>
             </div>
             <div className="stats">
@@ -103,14 +103,14 @@ export function MeClient() {
         ) : (
           <div className="row" style={{ justifyContent: "space-between" }}>
             <p style={{ maxWidth: "52ch" }}><strong>Your tickets are saved on this device.</strong> Sign up to add a profile, or load the demo guest to see a full account.</p>
-            <Link className="btn btn--ink" href="/signup">Sign up</Link>
+            <Link className="btn btn--primary" href="/signup">Sign up</Link>
           </div>
         )}
       </section>
 
       {me.points.length > 0 && (
         <section className="stack" aria-labelledby="pts-h">
-          <h2 id="pts-h" style={{ fontSize: "1.8rem" }}>Points</h2>
+          <h2 id="pts-h" className="h-sub">Points</h2>
           <div className="stats">
             {me.points.map((pt) => (
               <div className="card" key={pt.org}>
@@ -126,19 +126,19 @@ export function MeClient() {
       )}
 
       <section className="stack" aria-labelledby="up-h">
-        <h2 id="up-h" style={{ fontSize: "1.8rem" }}>Upcoming ({upcoming.length})</h2>
+        <h2 id="up-h" className="h-sub">Upcoming ({upcoming.length})</h2>
         {upcoming.length ? (
           <div className="coll">{upcoming.map(render)}</div>
         ) : (
           <div className="empty stack">
             <p>No tickets on this device yet.</p>
-            <div><Link className="btn btn--ink" href="/#events">Find something to go to</Link></div>
+            <div><Link className="btn btn--primary" href="/#events">Find something to go to</Link></div>
           </div>
         )}
       </section>
 
       <section className="stack" aria-labelledby="st-h">
-        <h2 id="st-h" style={{ fontSize: "1.8rem" }}>Stub collection ({stubs.length})</h2>
+        <h2 id="st-h" className="h-sub">Stub collection ({stubs.length})</h2>
         {stubs.length ? (
           <div className="coll">{stubs.map(render)}</div>
         ) : (

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { contrast, readableOn } from "./contrast";
+import { contrast, luminance, mix, readableOn, tone } from "./contrast";
 
 export type Via = "rsvp" | "buy" | "earn";
 export type Pattern = "dots" | "stripes" | "grid" | "waves" | "none";
@@ -568,16 +568,33 @@ const FONT_VAR: Record<DisplayFont, string> = {
   serif: "var(--font-serif)",
   mono: "var(--font-mono)",
 };
+const FONT_WEIGHT: Record<DisplayFont, number> = { grotesk: 800, serif: 400, mono: 600 };
+const FONT_TRACK: Record<DisplayFont, string> = { grotesk: "-0.04em", serif: "-0.015em", mono: "-0.05em" };
 
-/** CSS custom properties that theme an event page, ticket or stub. Text colours are contrast-checked. */
+/**
+ * CSS custom properties that theme an event page, ticket, stub or storefront.
+ * Every derived colour is contrast-checked here, so an organizer cannot pick an unreadable pair.
+ */
 export function designVars(d: Design): CSSProperties {
-  const ink = contrast(d.paper, d.ink) >= 4.5 ? d.ink : readableOn(d.paper);
+  const paper = d.paper;
+  const ink = contrast(paper, d.ink) >= 4.5 ? d.ink : readableOn(paper);
+  const dark = luminance(paper) < 0.3;
+  const card = dark ? mix(paper, ink, 0.07) : mix(paper, "#ffffff", 0.7);
+  // Muted text also sits on control tracks (card with a little ink mixed in), so check against that too.
+  const track = mix(card, ink, 0.1);
   return {
-    "--e-paper": d.paper,
+    "--e-paper": paper,
     "--e-ink": ink,
+    "--e-card": card,
+    "--e-muted": tone(ink, paper, [paper, card, track], 4.6, 0.6),
+    "--e-line": mix(paper, ink, dark ? 0.16 : 0.12),
+    "--e-line-strong": tone(ink, paper, [paper, card], 3.1, 0.3),
     "--e-accent": d.accent,
-    "--e-on-accent": readableOn(d.accent, [ink, d.paper, "#17140f", "#ffffff"]),
+    "--e-on-accent": readableOn(d.accent, [ink, paper, "#0d0d12", "#ffffff"]),
     "--e-display": FONT_VAR[d.display],
+    "--e-weight": FONT_WEIGHT[d.display],
+    "--e-track": FONT_TRACK[d.display],
+    colorScheme: dark ? "dark" : "light",
   } as CSSProperties;
 }
 

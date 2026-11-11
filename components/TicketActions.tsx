@@ -73,16 +73,13 @@ export function TicketActions({ token, slug, qrSvg, isStub, apple, google, invit
           It stays on this device and in your wallet pass.
         </div>
       ) : (
-        <div className="note">
-          <strong>Show this QR at the door.</strong>
-          This page updates by itself when you’re scanned in. It also works with a weak signal once it has loaded.
-        </div>
+        <p className="muted" style={{ textAlign: "center" }}>Show this QR at the door. This page turns into your stub when you’re scanned in.</p>
       )}
 
       <div className="actions">
         {!isStub && (
-          <button className="btn btn--ink" onClick={() => setBright(true)}>
-            Show big QR
+          <button className="btn btn--primary" onClick={() => setBright(true)}>
+            Enlarge QR
           </button>
         )}
         {apple ? (
@@ -100,17 +97,17 @@ export function TicketActions({ token, slug, qrSvg, isStub, apple, google, invit
           </button>
         )}
         {!isStub && <a className="btn" href={`/api/ics?slug=${slug}`}>Add to calendar</a>}
-        {inviteGid && !isStub && <button className="btn btn--salmon" onClick={share}>Invite a friend, earn points</button>}
+        {inviteGid && !isStub && <button className="btn" onClick={share}>Invite a friend, earn points</button>}
         <Link className="btn" href="/me">{isStub ? "See my stubs" : "All my tickets"}</Link>
       </div>
-      <p className="hint" aria-live="polite">{note}</p>
+      <p className="hint" aria-live="polite">{note || (!apple || !google ? "Wallet passes switch on once Apple and Google wallet credentials are added. Add to calendar works now." : "")}</p>
 
       {bright && (
         <div className="bright" role="dialog" aria-modal="true" aria-label="Ticket QR code, full screen">
           <div>
             <div className="bright__qr" role="img" aria-label="QR code for this ticket" dangerouslySetInnerHTML={{ __html: qrSvg }} />
             <p style={{ marginTop: 12, fontWeight: 650 }}>Turn your screen brightness up if the scanner struggles.</p>
-            <button ref={closeRef} className="btn" style={{ background: "#fff", color: "#000", borderColor: "#000", boxShadow: "0 3px 0 #000" }} onClick={() => setBright(false)}>
+            <button ref={closeRef} className="btn" style={{ background: "#fff", color: "#000", borderColor: "#000", marginTop: 18 }} onClick={() => setBright(false)}>
               Close
             </button>
           </div>

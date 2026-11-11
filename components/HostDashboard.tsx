@@ -15,9 +15,9 @@ interface Stats {
 }
 
 const VIA = [
-  { key: "rsvp", label: "RSVP", color: "var(--mint)" },
-  { key: "buy", label: "Bought", color: "var(--marigold)" },
-  { key: "earn", label: "Earned", color: "var(--salmon)" },
+  { key: "rsvp", label: "RSVP", color: "var(--rsvp-fg)" },
+  { key: "buy", label: "Bought", color: "var(--buy-fg)" },
+  { key: "earn", label: "Earned", color: "var(--earn-fg)" },
 ] as const;
 
 export function HostDashboard({ slug, currency, paid, initialDoor = "" }: { slug: string; currency: string; paid: boolean; initialDoor?: string }) {
@@ -58,7 +58,7 @@ export function HostDashboard({ slug, currency, paid, initialDoor = "" }: { slug
           <input id="h-door" type="text" inputMode="numeric" autoComplete="off" value={door} onChange={(e) => setDoor(e.target.value)} aria-describedby="h-hint" />
           <p className="hint" id="h-hint">Sample events use 2468. Your own events show their code in the back office.</p>
         </div>
-        <button className="btn btn--ink">Open dashboard</button>
+        <button className="btn btn--primary">Open dashboard</button>
         <p role="alert" style={{ color: "var(--bad)", fontWeight: 650 }}>{err}</p>
       </form>
     );
@@ -79,7 +79,7 @@ export function HostDashboard({ slug, currency, paid, initialDoor = "" }: { slug
       </div>
 
       <section className="card stack" aria-labelledby="h-via">
-        <h2 id="h-via" style={{ fontSize: "1.4rem" }}>How guests got in</h2>
+        <h2 id="h-via" className="h-sub">How guests got in</h2>
         {VIA.map((v) => (
           <div className="bar" key={v.key}>
             <span>{v.label}</span>
@@ -92,11 +92,11 @@ export function HostDashboard({ slug, currency, paid, initialDoor = "" }: { slug
 
       {stats.answers.map((a) => (
         <section className="card stack" key={a.label}>
-          <h2 style={{ fontSize: "1.4rem" }}>{a.label}</h2>
+          <h2 className="h-sub">{a.label}</h2>
           {a.options.map((o) => (
             <div className="bar" key={o.label}>
               <span>{o.label}</span>
-              <div className="bar__track"><div className="bar__fill" style={{ width: `${(o.count / Math.max(1, stats.liveTickets)) * 100}%`, background: "var(--sky)" }} /></div>
+              <div className="bar__track"><div className="bar__fill" style={{ width: `${(o.count / Math.max(1, stats.liveTickets)) * 100}%`, background: "var(--stub-fg)" }} /></div>
               <strong>{o.count}</strong>
             </div>
           ))}
@@ -106,7 +106,7 @@ export function HostDashboard({ slug, currency, paid, initialDoor = "" }: { slug
 
       {stats.earn && (
         <section className="card stack" aria-labelledby="h-earn">
-          <h2 id="h-earn" style={{ fontSize: "1.4rem" }}>Earn</h2>
+          <h2 id="h-earn" className="h-sub">Earn</h2>
           <div className="stats">
             <div><div className="num">{stats.earn.pointsIssued}</div><p className="muted">points issued</p></div>
             <div><div className="num">{stats.earn.pointsSpent}</div><p className="muted">points spent</p></div>
@@ -118,7 +118,7 @@ export function HostDashboard({ slug, currency, paid, initialDoor = "" }: { slug
 
       {paid && (
         <section className="card stack" aria-labelledby="h-pay">
-          <h2 id="h-pay" style={{ fontSize: "1.4rem" }}>Payouts (sandbox)</h2>
+          <h2 id="h-pay" className="h-sub">Payouts (sandbox)</h2>
           <p>Live ticket sales: <strong>{formatMoney(stats.revenueMinor, currency)}</strong></p>
           <p className="muted">
             On the {policy.label.toLowerCase()} tier, {formatMoney(payout.payNow, currency)} would be paid out the next business day and{" "}

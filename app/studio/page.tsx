@@ -11,7 +11,7 @@ export default function StudioPage() {
       <main id="main" className="wrap stack" style={{ "--gap": "26px", paddingTop: 16 } as React.CSSProperties}>
         <div className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
           <p className="mono">For hosts</p>
-          <h1 style={{ fontSize: "clamp(2.2rem,6vw,4rem)" }}>Design studio</h1>
+          <h1 className="h-app">Design studio</h1>
           <p className="lede">One design drives the event page, the ticket, the wallet pass and the stub. Change it here and watch all of them follow.</p>
         </div>
         <Studio />

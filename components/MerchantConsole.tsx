@@ -51,9 +51,9 @@ export function MerchantConsole() {
   if (!session) {
     return (
       <div className="section stack" style={{ maxWidth: 620 }}>
-        <h1 style={{ fontSize: "clamp(2.2rem,6vw,3.6rem)" }}>Merchant back office</h1>
+        <h1 className="h-app">Merchant back office</h1>
         <p className="lede">Sign up as a merchant, or load the demo merchant, to create events and design your storefront.</p>
-        <div><Link className="btn btn--ink" href="/signup">Sign up or load the demo</Link></div>
+        <div><Link className="btn btn--primary" href="/signup">Sign up or load the demo</Link></div>
       </div>
     );
   }
@@ -72,10 +72,10 @@ export function MerchantConsole() {
       <div className="row" style={{ justifyContent: "space-between", alignItems: "end" }}>
         <div className="stack" style={{ "--gap": "6px" } as React.CSSProperties}>
           <p className="mono">Back office</p>
-          <h1 style={{ fontSize: "clamp(2rem,5.5vw,3.4rem)" }}>{merchant.name}</h1>
+          <h1 className="h-app">{merchant.name}</h1>
         </div>
         <div className="row">
-          <Link className="btn btn--sm btn--ink" href={`/s/${merchant.handle}`}>View live storefront</Link>
+          <Link className="btn btn--sm btn--primary" href={`/s/${merchant.handle}`}>View live storefront</Link>
           <button className="btn btn--sm" onClick={signOut}>Sign out</button>
         </div>
       </div>
@@ -150,18 +150,18 @@ function EventsTab({ events, max, api, reload }: { events: OwnedEvent[]; max: nu
                   <span className="chip">{ev.counts.going.toLocaleString("en")} of {ev.capacity.toLocaleString("en")} going</span>
                   <span className="chip">{ev.counts.checkedIn} scanned in</span>
                   {ev.counts.maybe > 0 && <span className="chip">{ev.counts.maybe} maybe</span>}
-                  {ev.counts.waitlist > 0 && <span className="chip chip--marigold">{ev.counts.waitlist} waiting</span>}
-                  {ev.rsvp && <span className="chip chip--mint">RSVP</span>}
-                  {ev.tiers.length > 0 && <span className="chip chip--marigold">Paid</span>}
-                  {ev.earn && <span className="chip chip--salmon">Earn</span>}
+                  {ev.counts.waitlist > 0 && <span className="chip chip--buy">{ev.counts.waitlist} waiting</span>}
+                  {ev.rsvp && <span className="chip chip--rsvp">RSVP</span>}
+                  {ev.tiers.length > 0 && <span className="chip chip--buy">Paid</span>}
+                  {ev.earn && <span className="chip chip--earn">Earn</span>}
                 </div>
-                <p className="hint">Door code for staff: <strong>{ev.doorCode}</strong></p>
+                <p className="hint">Door code for staff <span className="code">{ev.doorCode}</span></p>
               </div>
               <div className="row">
                 <Link className="btn btn--sm" href={`/e/${ev.slug}`}>Event page</Link>
                 <Link className="btn btn--sm" href={`/host/${ev.slug}?door=${ev.doorCode}`}>Guest list</Link>
                 <Link className="btn btn--sm" href={`/scan?event=${ev.slug}&door=${ev.doorCode}`}>Scanner</Link>
-                <button className="btn btn--sm" onClick={() => remove(ev)} aria-label={`Delete ${ev.title}`}>Delete</button>
+                <button className="btn btn--sm btn--danger" onClick={() => remove(ev)} aria-label={`Delete ${ev.title}`}>Delete</button>
               </div>
             </article>
           ))
@@ -169,7 +169,7 @@ function EventsTab({ events, max, api, reload }: { events: OwnedEvent[]; max: nu
       </section>
 
       <section className="card stack" aria-labelledby="mc-new">
-        <h2 id="mc-new" style={{ fontSize: "1.6rem" }}>New event</h2>
+        <h2 id="mc-new" className="h-sub">New event</h2>
         {events.length >= max ? (
           <p className="muted">The demo allows {max} events per organizer. Delete one to add another.</p>
         ) : (
@@ -185,8 +185,8 @@ function EventsTab({ events, max, api, reload }: { events: OwnedEvent[]; max: nu
             </div>
             <div className="field"><label htmlFor="ne-tag">One-line description</label><input id="ne-tag" type="text" maxLength={120} value={f.tagline} onChange={(e) => set("tagline", e.target.value)} /></div>
 
-            <fieldset className="card stack" style={{ background: "var(--mint)", color: "var(--on-color)" }}>
-              <legend className="chip">Way in 1 · RSVP</legend>
+            <fieldset className="waybox stack">
+              <legend><span className="chip chip--rsvp">Way in 1 · RSVP</span></legend>
               <label className="check"><input type="checkbox" checked={f.rsvp} onChange={(e) => set("rsvp", e.target.checked)} />Free RSVP is open</label>
               {f.rsvp && (
                 <div className="form-grid">
@@ -197,8 +197,8 @@ function EventsTab({ events, max, api, reload }: { events: OwnedEvent[]; max: nu
               )}
             </fieldset>
 
-            <fieldset className="card stack" style={{ background: "var(--marigold)", color: "var(--on-color)" }}>
-              <legend className="chip">Way in 2 · Buy</legend>
+            <fieldset className="waybox stack">
+              <legend><span className="chip chip--buy">Way in 2 · Buy</span></legend>
               <p>Leave these blank for a free event. Prices are in pesos.</p>
               {f.tiers.map((t, i) => (
                 <div className="form-grid" key={i}>
@@ -208,13 +208,13 @@ function EventsTab({ events, max, api, reload }: { events: OwnedEvent[]; max: nu
               ))}
             </fieldset>
 
-            <fieldset className="card stack" style={{ background: "var(--salmon)", color: "var(--on-color)" }}>
-              <legend className="chip">Way in 3 · Earn</legend>
+            <fieldset className="waybox stack">
+              <legend><span className="chip chip--earn">Way in 3 · Earn</span></legend>
               <label className="check"><input type="checkbox" checked={f.earn} onChange={(e) => set("earn", e.target.checked)} />Guests earn points for joining, showing up and bringing friends</label>
               <p>Points buy a free ticket when you sell tickets (capped at 10% of capacity), or a skip-the-line perk when the event is free.</p>
             </fieldset>
 
-            <button className="btn btn--ink" disabled={busy}>{busy ? "Publishing…" : "Publish event"}</button>
+            <button className="btn btn--primary" disabled={busy}>{busy ? "Publishing…" : "Publish event"}</button>
           </form>
         )}
         <div aria-live="polite">
@@ -267,8 +267,16 @@ function StorefrontTab({ merchant, events, api, onSaved }: { merchant: Merchant;
   );
 
   return (
+    <div className="stack">
+      <div className="savebar">
+        <span aria-live="polite" style={{ fontSize: "0.9375rem" }}>{msg || (dirty ? "You have unsaved changes." : "Everything is published.")}</span>
+        <span className="row" style={{ gap: 8 }}>
+          {dirty && <button type="button" className="btn btn--sm btn--ghost" onClick={() => { setName(merchant.name); setSf(merchant.storefront); setMsg(""); }}>Discard</button>}
+          {dirty && <button type="submit" form="sf-form" className="btn btn--sm btn--primary" disabled={busy}>{busy ? "Saving…" : "Save and publish"}</button>}
+        </span>
+      </div>
     <div className="console__split">
-      <form className="card stack" onSubmit={(e) => { e.preventDefault(); void save(); }} aria-label="Storefront settings">
+      <form id="sf-form" className="card stack" onSubmit={(e) => { e.preventDefault(); void save(); }} aria-label="Storefront settings">
         <div className="field"><label htmlFor="sf-name">Name</label><input id="sf-name" type="text" maxLength={40} value={name} onChange={(e) => setName(e.target.value)} /></div>
         <div className="field"><label htmlFor="sf-tag">Tagline</label><input id="sf-tag" type="text" maxLength={90} value={sf.tagline} onChange={(e) => set("tagline", e.target.value)} /></div>
         <div className="field"><label htmlFor="sf-about">About</label><textarea id="sf-about" rows={4} maxLength={500} value={sf.about} onChange={(e) => set("about", e.target.value)} /></div>
@@ -277,7 +285,7 @@ function StorefrontTab({ merchant, events, api, onSaved }: { merchant: Merchant;
         <DesignControls design={sf.design} onChange={(d) => set("design", d)} />
 
         {seg<HeroStyle>("Header layout", "hero", [["left", "Left"], ["center", "Centred"], ["banner", "Banner"]])}
-        {seg<CardStyle>("Event cards", "cards", [["ticket", "Tickets"], ["poster", "Posters"], ["list", "List"]])}
+        {seg<CardStyle>("Event cards", "cards", [["ticket", "Cards"], ["poster", "Posters"], ["list", "List"]])}
         {seg<Corners>("Corners", "corners", [["soft", "Soft"], ["sharp", "Sharp"], ["round", "Round"]])}
 
         <div>
@@ -293,16 +301,15 @@ function StorefrontTab({ merchant, events, api, onSaved }: { merchant: Merchant;
           </ol>
         </div>
 
-        <button className="btn btn--ink" disabled={busy || !dirty}>{busy ? "Saving…" : dirty ? "Save and publish" : "Saved"}</button>
-        <p className="hint" aria-live="polite">{msg}</p>
       </form>
 
-      <div className="stack">
+      <div className="stack console__preview">
         <p className="mono">Live preview{dirty ? " · unsaved changes" : ""}</p>
         <div className="sf-frame" tabIndex={0} role="region" aria-label="Storefront preview">
           <StorefrontView merchant={{ name, handle: merchant.handle, storefront: sf }} events={events} preview />
         </div>
       </div>
+    </div>
     </div>
   );
 }

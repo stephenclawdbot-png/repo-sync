@@ -45,7 +45,7 @@ export const DEFAULT_STOREFRONT: Storefront = {
   sections: [
     { id: "events", on: true },
     { id: "about", on: true },
-    { id: "ways", on: true },
+    { id: "ways", on: false },
     { id: "stubs", on: true },
   ],
 };

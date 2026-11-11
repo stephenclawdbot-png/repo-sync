@@ -164,7 +164,7 @@ export function Scanner({ events, initial, initialDoor = "" }: { events: { slug:
         </>
       ) : (
         <div className="stack">
-          <div><button className="btn btn--ink" onClick={start} disabled={camera === "starting"}>{camera === "starting" ? "Starting camera…" : "Start camera"}</button></div>
+          <div><button className="btn btn--primary" onClick={start} disabled={camera === "starting"}>{camera === "starting" ? "Starting camera…" : "Start camera"}</button></div>
           {camera === "blocked" && (
             <div className="note note--warn" role="alert"><strong>Camera not available</strong>Allow camera access for this site in your browser settings, or type the ticket code below.</div>
           )}
@@ -181,7 +181,7 @@ export function Scanner({ events, initial, initialDoor = "" }: { events: { slug:
       </form>
 
       <section aria-labelledby="sc-log" className="stack">
-        <h2 id="sc-log" style={{ fontSize: "1.4rem" }}>This session: {admitted} admitted</h2>
+        <h2 id="sc-log" className="h-sub">This session: {admitted} admitted</h2>
         {log.length === 0 ? <p className="muted">Nothing scanned yet.</p> : (
           <ul className="stack" style={{ listStyle: "none", padding: 0, margin: 0, "--gap": "8px" } as React.CSSProperties}>
             {log.map((l) => <li key={l.at} className={`note note--${l.tone}`} style={{ padding: "10px 14px" }}>{l.text}</li>)}

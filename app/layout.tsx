@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/bricolage-grotesque";
-import "@fontsource-variable/instrument-sans";
+import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource-variable/inter";
+import "@fontsource/instrument-serif/400.css";
 import "@fontsource-variable/geist-mono";
 import "./globals.css";
 

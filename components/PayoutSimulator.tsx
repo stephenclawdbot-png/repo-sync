@@ -46,7 +46,7 @@ export function PayoutSimulator() {
                 <th scope="row" style={{ fontFamily: "inherit", fontSize: "inherit", letterSpacing: 0, textTransform: "none", color: "inherit" }}>{r.label}</th>
                 <td>{php(r.after)}</td>
                 <td><strong>{php(r.rolling)}</strong></td>
-                <td><div className="bar__track" aria-hidden="true"><div className="bar__fill" style={{ width: `${(r.rolling / max) * 100}%`, background: "var(--marigold)" }} /></div></td>
+                <td><div className="bar__track" aria-hidden="true"><div className="bar__fill" style={{ width: `${(r.rolling / max) * 100}%`, background: "var(--buy-fg)" }} /></div></td>
               </tr>
             ))}
           </tbody>

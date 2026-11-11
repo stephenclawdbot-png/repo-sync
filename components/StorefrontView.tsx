@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { designVars, type EventDef, priceLine } from "@/lib/events";
 import { SECTION_LABEL, type Merchant } from "@/lib/storefront";
+import { EventCard } from "./EventCard";
 import { Poster } from "./Poster";
 import { Ticket } from "./Ticket";
 
@@ -33,7 +34,7 @@ export function StorefrontView({ merchant, events, preview }: Props) {
           <div className="sf__list">
             {events.map((e) => (
               <A key={e.slug} href={`/e/${e.slug}`} className="sf__row">
-                <span className="mono">{e.dateLabel}</span>
+                <span className="digits" style={{ fontSize: "0.8125rem" }}>{e.dateLabel}</span>
                 <span><strong>{e.title}</strong><br /><span className="muted">{e.venue}, {e.city}</span></span>
                 <span style={{ fontWeight: 650 }}>{priceLine(e as EventDef)} →</span>
               </A>
@@ -52,24 +53,7 @@ export function StorefrontView({ merchant, events, preview }: Props) {
           </div>
         ) : (
           <div className="events">
-            {events.map((e) => {
-              const [dow, day, month] = e.dateLabel.split(" ");
-              return (
-                <A key={e.slug} href={`/e/${e.slug}`} className="ev-card">
-                  <div className="ev-card__date">
-                    <span className="mono">{month}</span>
-                    <span className="ev-card__day">{day}</span>
-                    <span className="mono">{dow}</span>
-                  </div>
-                  <div className="ev-card__body">
-                    <span className="mono">{e.kind} · {e.city}</span>
-                    <h3>{e.title}</h3>
-                    <p className="muted">{e.tagline}</p>
-                    <p className="ev-card__foot">{priceLine(e as EventDef)}</p>
-                  </div>
-                </A>
-              );
-            })}
+            {events.map((e) => <EventCard key={e.slug} ev={{ ...e, design: d }} inert={preview} />)}
           </div>
         )}
       </section>
@@ -84,9 +68,9 @@ export function StorefrontView({ merchant, events, preview }: Props) {
       <section className="sf__section" key="ways" aria-label="Ways in">
         <h2>Three ways in</h2>
         <div className="grid-3">
-          <div className="card"><span className="chip chip--mint">RSVP</span><p style={{ marginTop: 10 }}>Free events take one tap. No account, no app.</p></div>
-          <div className="card"><span className="chip chip--marigold">Buy</span><p style={{ marginTop: 10 }}>Pay with GCash, Maya, QR, card or PayPal.</p></div>
-          <div className="card"><span className="chip chip--salmon">Earn</span><p style={{ marginTop: 10 }}>Bring friends and show up. Points become tickets and perks.</p></div>
+          <div className="card"><span className="chip chip--rsvp">RSVP</span><p style={{ marginTop: 10 }}>Free events take one tap. No account, no app.</p></div>
+          <div className="card"><span className="chip chip--buy">Buy</span><p style={{ marginTop: 10 }}>Pay with GCash, Maya, QR, card or PayPal.</p></div>
+          <div className="card"><span className="chip chip--earn">Earn</span><p style={{ marginTop: 10 }}>Bring friends and show up. Points become tickets and perks.</p></div>
         </div>
       </section>
     ) ,
@@ -126,7 +110,7 @@ export function StorefrontView({ merchant, events, preview }: Props) {
           {sf.hero === "banner" && <span className="poster__glyph" aria-hidden="true">{d.glyph}</span>}
           <H className="sf__name">{merchant.name}</H>
           {sf.tagline && <p className="lede">{sf.tagline}</p>}
-          <div><A href="#events" className="btn btn--ink">See what’s on</A></div>
+          <div><A href="#events" className={sf.hero === "banner" ? "btn" : "btn btn--primary"}>See what’s on</A></div>
         </div>
         {sf.sections.filter((s) => s.on).map((s) => sections[s.id])}
       </Main>

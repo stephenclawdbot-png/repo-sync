@@ -26,3 +26,19 @@ export function readableOn(bg: string, candidates: string[] = ["#17140f", "#ffff
 export function isHex(v: string): boolean {
   return /^#[0-9a-fA-F]{6}$/.test(v);
 }
+
+/** Blend two hex colours: `t` is the share of `b` (0..1). */
+export function mix(a: string, b: string, t: number): string {
+  const ch = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const [x, y] = [ch(a), ch(b)];
+  return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join("");
+}
+
+/** Blend `ink` into `bg` until the result reaches `target` contrast against every surface given. */
+export function tone(ink: string, bg: string, surfaces: string[], target: number, start: number): string {
+  for (let share = start; share < 1; share += 0.04) {
+    const c = mix(bg, ink, share);
+    if (surfaces.every((s) => contrast(c, s) >= target)) return c;
+  }
+  return ink;
+}

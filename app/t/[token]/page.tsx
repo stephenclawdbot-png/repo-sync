@@ -24,9 +24,9 @@ export default async function TicketPage({ params }: { params: Promise<{ token: 
       <>
         <SiteHeader />
         <main id="main" className="wrap section stack">
-          <h1 style={{ fontSize: "clamp(2rem,6vw,3.4rem)" }}>This ticket link isn’t valid</h1>
+          <h1 className="h-app">This ticket link isn’t valid</h1>
           <p className="lede">The link may have been cut short when it was copied. Open it again from where you saved it, or check your tickets on this device.</p>
-          <div><Link className="btn btn--ink" href="/me">My tickets</Link></div>
+          <div><Link className="btn btn--primary" href="/me">My tickets</Link></div>
         </main>
       </>
     );
@@ -42,8 +42,7 @@ export default async function TicketPage({ params }: { params: Promise<{ token: 
       <SiteHeader />
       <main id="main" className="tk-page__inner stack" style={{ "--gap": "22px" } as React.CSSProperties}>
         <div className="stack" style={{ "--gap": "8px" } as React.CSSProperties}>
-          <p className="mono">{scanned ? "Your stub" : "Your ticket"}</p>
-          <h1 style={{ fontSize: "clamp(2rem,6vw,3.2rem)" }}>{scanned ? "You were there." : cancelled ? "This ticket was cancelled" : `See you at ${ev.title}.`}</h1>
+                    <h1 className="h-app">{scanned ? "You were there." : cancelled ? "This ticket was cancelled" : `See you at ${ev.title}.`}</h1>
           {scanned && <p className="lede">Scanned in as guest No. {serial(scanned.serial)}. The ticket is now a stub, and it’s yours to keep.</p>}
           {cancelled && <p className="lede">The RSVP for this ticket was changed, so it won’t scan at the door. RSVP again to get a new one.</p>}
         </div>
@@ -64,11 +63,12 @@ export default async function TicketPage({ params }: { params: Promise<{ token: 
             qrSvg={qr}
             ticketNo={claims.i.toUpperCase()}
             serial={scanned ? serial(scanned.serial) : undefined}
+            fresh={Boolean(scanned && Date.now() - scanned.at < 20000)}
           />
         )}
 
         {cancelled ? (
-          <div><Link className="btn btn--ink" href={`/e/${ev.slug}`}>Back to the event</Link></div>
+          <div><Link className="btn btn--primary" href={`/e/${ev.slug}`}>Back to the event</Link></div>
         ) : (
           <TicketActions
             token={token}
